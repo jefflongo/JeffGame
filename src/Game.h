@@ -19,9 +19,10 @@ public:
 	void update();
 	void render();
 
-	void toggleDebug();
 	bool getDebugMode() const;
-	unsigned int getFramerate();
+	unsigned int getFramerate() const;
+
+	void toggleDebug();
 	void setFramerate(unsigned int targetFps);
 	//void calculateFramerate();
 	void lowerFramerate();

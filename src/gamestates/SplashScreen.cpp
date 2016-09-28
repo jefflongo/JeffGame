@@ -43,7 +43,7 @@ void SplashScreen::pollForStart(Game& game)
 {
 	static bool startPressed = false;
 	static unsigned int controllerId;
-	static Controls controls;
+	static Controller::Controls controls;
 	static Controller* controller = nullptr; // TODO: when do we delete this??
 	static int fadeTimer = 100;
 
