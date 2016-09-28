@@ -28,39 +28,11 @@ Button 10  - D-pad down
 Button 11  - D-pad right
 */
 
-struct Button
-{
-	unsigned int id;
-	bool held;
-	//unsigned int framesHeld;
-};
-
-struct Controls
-{
-	float ANALOG_STICK_RADIUS, C_STICK_RADIUS, SHOULDER_MIN, SHOULDER_MAX;
-	Button A, B, X, Y, Z, R, L, START, D_PAD_UP, D_PAD_LEFT, D_PAD_DOWN, D_PAD_RIGHT;
-};
-
 class Controller
 {
 public:
 	typedef sf::Joystick::Axis Axis;
 
-	Controller();
-	Controller(unsigned int controllerId, Controls controls);
-
-	Controls* getControls(); // hopefully find a way to get rid of this
-	void update();
-	float getAxisPosition(Axis axis) const;
-	bool axisPercentageGreaterThan(Axis axis, float percent);
-	bool axisPercentageLessThan(Axis axis, float percent);
-	bool axisPercentageBetween(Axis axis, float percentOne, float percentTwo);
-	int getControlStickAngle();
-	bool controlStickAngleBetween(int angleOne, int angleTwo);
-	bool buttonPressed(Button& button);
-	bool cardinalDirectionChange(Axis axis, int frames);
-
-private:
 	enum class CardinalDirections { Up, Down, Left, Right, None };
 
 	struct Stick
@@ -70,12 +42,42 @@ private:
 		int framesSinceHorizontalChange = 0, framesSinceVerticalChange = 0;
 	};
 
+	struct Button
+	{
+		unsigned int id;
+		bool held;
+		//unsigned int framesHeld;
+	};
+
+	struct Controls
+	{
+		float ANALOG_STICK_RADIUS, C_STICK_RADIUS, SHOULDER_MIN, SHOULDER_MAX;
+		Button A, B, X, Y, Z, R, L, START, D_PAD_UP, D_PAD_LEFT, D_PAD_DOWN, D_PAD_RIGHT;
+	};
+
+	Controller();
+	Controller(unsigned int controllerId, Controls controls);
+
+	void update();
+
+	Controls* getControls(); // hopefully find a way to get rid of this
+	float getAxisPosition(Axis axis) const;
+	int getControlStickAngle() const;
+
+	bool buttonPressed(Button& button);
+	bool axisPercentageGreaterThan(Axis axis, float percent);
+	bool axisPercentageLessThan(Axis axis, float percent);
+	bool axisPercentageBetween(Axis axis, float percentOne, float percentTwo);
+	bool controlStickAngleBetween(int angleOne, int angleTwo);
+	bool cardinalDirectionChange(Axis axis, int frames);
+
+private:
 	void checkHeldButtons();
 	void checkStickDirections();
 
 	Controls controls_;
 	Stick controlStick_, cStick_;
 	unsigned int controllerId_;
-	};
+};
 
 #endif // CONTROLLER_H_

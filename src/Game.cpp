@@ -115,19 +115,19 @@ void Game::render()
 	window_.display();
 }
 
-void Game::toggleDebug()
-{
-	debugMode_ = !debugMode_;
-}
-
 bool Game::getDebugMode() const
 {
 	return debugMode_;
 }
 
-unsigned int Game::getFramerate()
+unsigned int Game::getFramerate() const
 {
 	return targetFps_;
+}
+
+void Game::toggleDebug()
+{
+	debugMode_ = !debugMode_;
 }
 
 void Game::setFramerate(unsigned int value)

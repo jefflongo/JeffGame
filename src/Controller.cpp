@@ -8,15 +8,15 @@ Controller::Controller(unsigned int controllerId, Controls controls)
 	controls_ = controls;
 }
 
-Controls* Controller::getControls()
-{
-	return &controls_;
-}
-
 void Controller::update()
 {
 	checkHeldButtons();
 	checkStickDirections();
+}
+
+Controller::Controls* Controller::getControls()
+{
+	return &controls_;
 }
 
 float Controller::getAxisPosition(Axis axis) const
@@ -50,11 +50,31 @@ float Controller::getAxisPosition(Axis axis) const
 	default:
 		break;
 	}
-	
 	return pos;
 }
 
-bool Controller::axisPercentageGreaterThan(sf::Joystick::Axis axis, float percent)
+int Controller::getControlStickAngle() const
+{
+	// -atan due to SFML's Y-axis orientation
+	float angle = -atan2f(getAxisPosition(sf::Joystick::Axis::Y), getAxisPosition(sf::Joystick::Axis::X)) * 180 / static_cast<float>(M_PI);
+	// Add 0.5 to fix rounding truncation and add 360 followed by modulo 360 to always get a positive angle
+	return static_cast<int>(angle + 0.5 + 360) % 360;
+}
+
+bool Controller::buttonPressed(Button& button)
+{
+	if (sf::Joystick::isButtonPressed(controllerId_, button.id) && !button.held)
+	{
+		button.held = true;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool Controller::axisPercentageGreaterThan(Axis axis, float percent)
 {
 	float max;
 
@@ -87,14 +107,7 @@ bool Controller::axisPercentageGreaterThan(sf::Joystick::Axis axis, float percen
 		max = 0;
 		break;
 	}
-	if (getAxisPosition(axis) > 0.01*percent*max)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	return (getAxisPosition(axis) > 0.01*percent*max) ? true : false;
 }
 
 bool Controller::axisPercentageLessThan(sf::Joystick::Axis axis, float percent)
@@ -130,17 +143,10 @@ bool Controller::axisPercentageLessThan(sf::Joystick::Axis axis, float percent)
 		max = 0;
 		break;
 	}
-	if (getAxisPosition(axis) < 0.01*percent*max)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	return (getAxisPosition(axis) < 0.01*percent*max) ? true : false;
 }
 
-bool Controller::axisPercentageBetween(sf::Joystick::Axis axis, float percentOne, float percentTwo)
+bool Controller::axisPercentageBetween(Axis axis, float percentOne, float percentTwo)
 {
 	if (percentOne > percentTwo)
 	{
@@ -148,22 +154,7 @@ bool Controller::axisPercentageBetween(sf::Joystick::Axis axis, float percentOne
 		percentOne = percentTwo;
 		percentTwo = temp;
 	}
-	if (axisPercentageGreaterThan(axis, percentOne) && axisPercentageLessThan(axis, percentTwo))
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-int Controller::getControlStickAngle()
-{
-	// -atan due to SFML's Y-axis orientation
-	float angle = -atan2f(getAxisPosition(sf::Joystick::Axis::Y), getAxisPosition(sf::Joystick::Axis::X)) * 180 / static_cast<float>(M_PI);
-	// Add 0.5 to fix rounding truncation and add 360 followed by modulo 360 to always get a positive angle
-	return static_cast<int>(angle + 0.5 + 360) % 360;
+	return (axisPercentageGreaterThan(axis, percentOne) && axisPercentageLessThan(axis, percentTwo)) ? true : false;
 }
 
 bool Controller::controlStickAngleBetween(int angleOne, int angleTwo)
@@ -174,27 +165,7 @@ bool Controller::controlStickAngleBetween(int angleOne, int angleTwo)
 		angleOne = angleTwo;
 		angleTwo = temp;
 	}
-	if (getControlStickAngle() >= angleOne && getControlStickAngle() <= angleTwo)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-bool Controller::buttonPressed(Button& button)
-{
-	if (sf::Joystick::isButtonPressed(controllerId_, button.id) && !button.held)
-	{
-		button.held = true;
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	return (getControlStickAngle() >= angleOne && getControlStickAngle() <= angleTwo) ? true : false;
 }
 
 bool Controller::cardinalDirectionChange(Axis axis, int frames)
@@ -202,44 +173,16 @@ bool Controller::cardinalDirectionChange(Axis axis, int frames)
 	switch (axis)
 	{
 	case Axis::X:
-		if (controlStick_.framesSinceHorizontalChange <= frames)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return (controlStick_.framesSinceHorizontalChange <= frames) ? true : false;
 		break;
 	case Axis::Y:
-		if (controlStick_.framesSinceVerticalChange <= frames)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return (controlStick_.framesSinceVerticalChange <= frames) ? true : false;
 		break;
 	case Axis::V:
-		if (cStick_.framesSinceHorizontalChange <= frames)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return (cStick_.framesSinceHorizontalChange <= frames) ? true : false;
 		break;
 	case Axis::U:
-		if (cStick_.framesSinceVerticalChange <= frames)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return (cStick_.framesSinceVerticalChange <= frames) ? true : false;
 		break;
 	default:
 		return false;

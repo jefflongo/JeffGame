@@ -14,6 +14,7 @@ public:
 	std::vector<sf::RectangleShape> getPermeableObjects() const;
 	sf::RectangleShape getCollidableObject(unsigned int i) const;
 	sf::RectangleShape getPermeableObject(unsigned int i) const;
+
 	int groundCollision(const sf::RectangleShape& player, sf::Vector2f pos);
 	int platformCollision(const sf::RectangleShape& player, sf::Vector2f pos);
 	void render(sf::RenderWindow& window);
