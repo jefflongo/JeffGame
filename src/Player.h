@@ -11,7 +11,7 @@ class Stage;
 class Player
 {
 public:
-	enum class Direction { Left, Right };
+	enum class Direction { Left = -1, Right = 1 };
 
 	Player();
 	Player(Controller* controller, Direction direction, float xOffset);

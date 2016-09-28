@@ -8,47 +8,49 @@ Controller::Controller(unsigned int controllerId, Controls controls)
 	controls_ = controls;
 }
 
-void Controller::update()
-{
-	checkHeldButtons();
-	checkStickDirection();
-}
-
 Controls* Controller::getControls()
 {
 	return &controls_;
 }
 
-Controller::CardinalDirections Controller::getStickDirection() const
+void Controller::update()
 {
-	return stickDirection_;
+	checkHeldButtons();
+	checkStickDirections();
 }
 
-int Controller::getFramesSinceStickDirectionChange() const
+float Controller::getAxisPosition(Axis axis) const
 {
-	return framesSinceStickDirectionChange_;
-}
-
-float Controller::getAxisPosition(sf::Joystick::Axis axis) const
-{
-	float deadzone, pos = sf::Joystick::getAxisPosition(controllerId_, axis);
+	float pos = sf::Joystick::getAxisPosition(controllerId_, axis), deadzone = 0;
 
 	switch (axis)
 	{
-		// TODO: Add other deadzones
-	case sf::Joystick::Axis::X:
-	case sf::Joystick::Axis::Y:
+	case Axis::X:
+	case Axis::Y:
 		deadzone = 0.275f;
+		if (pos >= -deadzone*controls_.ANALOG_STICK_RADIUS && pos <= deadzone*controls_.ANALOG_STICK_RADIUS)
+		{
+			pos = 0;
+		}
+		break;
+	case Axis::V:
+	case Axis::U:
+		deadzone = 0.275f;
+		if (pos >= -deadzone*controls_.C_STICK_RADIUS && pos <= deadzone*controls_.C_STICK_RADIUS)
+		{
+			pos = 0;
+		}
+		break;
+		break;
+	case sf::Joystick::Axis::Z:
+	case sf::Joystick::Axis::R:
+		// TODO: Add deadzone, 0.30
+		pos -= controls_.SHOULDER_MIN;
 		break;
 	default:
-		deadzone = 0;
 		break;
 	}
-	if (pos >= -deadzone*controls_.ANALOG_STICK_RADIUS && pos <= deadzone*controls_.ANALOG_STICK_RADIUS)
-	{
-		pos = 0;
-	}
-
+	
 	return pos;
 }
 
@@ -62,40 +64,23 @@ bool Controller::axisPercentageGreaterThan(sf::Joystick::Axis axis, float percen
 	case sf::Joystick::Axis::Y:
 	{
 		max = controls_.ANALOG_STICK_RADIUS;
-		if (percent < 0)
-		{
-			max *= -1;
-		}
 	}
 	break;
 	case sf::Joystick::Axis::V:
 	case sf::Joystick::Axis::U:
 	{
 		max = controls_.C_STICK_RADIUS;
-		if (percent < 0)
-		{
-			max *= -1;
-		}
 	}
 	break;
 	case sf::Joystick::Axis::Z:
 	case sf::Joystick::Axis::R:
 	{
-		// TODO: This may be wrong
+		// TODO: Test
 		if (percent < 0)
 		{
 			return true;
 		}
-		/*
-		if (controls_.SHOULDER_MIN < 0)
-		{
-		max = controls_.SHOULDER_MAX - controls_.SHOULDER_MIN
-		}
-		else
-		{
-		max = controls_.SHOULDER_MAX - controls_.SHOULDER_MIN
-		}
-		*/
+		max = controls_.SHOULDER_MAX - controls_.SHOULDER_MIN;
 	}
 	break;
 	default:
@@ -122,34 +107,23 @@ bool Controller::axisPercentageLessThan(sf::Joystick::Axis axis, float percent)
 	case sf::Joystick::Axis::Y:
 	{
 		max = controls_.ANALOG_STICK_RADIUS;
-		if (percent < 0)
-		{
-			max *= -1;
-		}
 	}
 	break;
 	case sf::Joystick::Axis::V:
 	case sf::Joystick::Axis::U:
 	{
 		max = controls_.C_STICK_RADIUS;
-		if (percent < 0)
-		{
-			max *= -1;
-		}
 	}
 	break;
 	case sf::Joystick::Axis::Z:
 	case sf::Joystick::Axis::R:
 	{
-		// this may be wrong
-		if (percent >= 0)
+		// TODO: Test
+		if (percent < 0)
 		{
-			max = controls_.SHOULDER_MAX;
+			return true;
 		}
-		else
-		{
-			max = controls_.SHOULDER_MIN;
-		}
+		max = controls_.SHOULDER_MAX - controls_.SHOULDER_MIN;
 	}
 	break;
 	default:
@@ -186,8 +160,28 @@ bool Controller::axisPercentageBetween(sf::Joystick::Axis axis, float percentOne
 
 int Controller::getControlStickAngle()
 {
+	// -atan due to SFML's Y-axis orientation
 	float angle = -atan2f(getAxisPosition(sf::Joystick::Axis::Y), getAxisPosition(sf::Joystick::Axis::X)) * 180 / static_cast<float>(M_PI);
-	return static_cast<int>(angle + 0.5);
+	// Add 0.5 to fix rounding truncation and add 360 followed by modulo 360 to always get a positive angle
+	return static_cast<int>(angle + 0.5 + 360) % 360;
+}
+
+bool Controller::controlStickAngleBetween(int angleOne, int angleTwo)
+{
+	if (angleOne > angleTwo)
+	{
+		int temp = angleOne;
+		angleOne = angleTwo;
+		angleTwo = temp;
+	}
+	if (getControlStickAngle() >= angleOne && getControlStickAngle() <= angleTwo)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 bool Controller::buttonPressed(Button& button)
@@ -200,6 +194,56 @@ bool Controller::buttonPressed(Button& button)
 	else
 	{
 		return false;
+	}
+}
+
+bool Controller::cardinalDirectionChange(Axis axis, int frames)
+{
+	switch (axis)
+	{
+	case Axis::X:
+		if (controlStick_.framesSinceHorizontalChange <= frames)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+		break;
+	case Axis::Y:
+		if (controlStick_.framesSinceVerticalChange <= frames)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+		break;
+	case Axis::V:
+		if (cStick_.framesSinceHorizontalChange <= frames)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+		break;
+	case Axis::U:
+		if (cStick_.framesSinceVerticalChange <= frames)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+		break;
+	default:
+		return false;
+		break;
 	}
 }
 
@@ -291,38 +335,126 @@ void Controller::checkHeldButtons()
 	}
 }
 
-void Controller::checkStickDirection()
+void Controller::checkStickDirections()
 {
-	if (axisPercentageLessThan(sf::Joystick::Axis::Y, -25) && stickDirection_ != CardinalDirections::Up)
+	// Update the state of the X-axis
+	if (axisPercentageLessThan(Axis::X, -25))
 	{
-		stickDirection_ = CardinalDirections::Up;
-		framesSinceStickDirectionChange_ = 0;
+		if (controlStick_.horizontalDir != CardinalDirections::Left)
+		{
+			controlStick_.horizontalDir = CardinalDirections::Left;
+			controlStick_.framesSinceHorizontalChange = 0;
+		}
+		else
+		{
+			controlStick_.framesSinceHorizontalChange++;
+		}
 	}
-	else if (axisPercentageGreaterThan(sf::Joystick::Axis::Y, 25) && stickDirection_ != CardinalDirections::Down)
+	else if (axisPercentageGreaterThan(Axis::X, 25))
 	{
-		stickDirection_ = CardinalDirections::Down;
-		framesSinceStickDirectionChange_ = 0;
-	}
-	else if (axisPercentageLessThan(sf::Joystick::Axis::X, -25) && stickDirection_ != CardinalDirections::Left)
-	{
-		stickDirection_ = CardinalDirections::Left;
-		framesSinceStickDirectionChange_ = 0;
-	}
-	else if (axisPercentageGreaterThan(sf::Joystick::Axis::X, 25) && stickDirection_ != CardinalDirections::Right)
-	{
-		stickDirection_ = CardinalDirections::Right;
-		framesSinceStickDirectionChange_ = 0;
-	}
-	// probably a better way to do this
-	else if (axisPercentageGreaterThan(sf::Joystick::Axis::Y, -25) && axisPercentageLessThan(sf::Joystick::Axis::Y, 25) &&
-		axisPercentageGreaterThan(sf::Joystick::Axis::X, -25) && axisPercentageLessThan(sf::Joystick::Axis::X, 25) &&
-		stickDirection_ != CardinalDirections::None)
-	{
-		stickDirection_ = CardinalDirections::None;
-		framesSinceStickDirectionChange_ = 0;
+		if (controlStick_.horizontalDir != CardinalDirections::Right)
+		{
+			controlStick_.horizontalDir = CardinalDirections::Right;
+			controlStick_.framesSinceHorizontalChange = 0;
+		}
+		else
+		{
+			controlStick_.framesSinceHorizontalChange++;
+		}
 	}
 	else
 	{
-		framesSinceStickDirectionChange_++;
+		controlStick_.horizontalDir = CardinalDirections::None;
+		controlStick_.framesSinceHorizontalChange = 0;
+	}
+	// Update the state of the Y-axis
+	if (axisPercentageLessThan(Axis::Y, -25))
+	{
+		if (controlStick_.verticalDir != CardinalDirections::Up)
+		{
+			controlStick_.verticalDir = CardinalDirections::Up;
+			controlStick_.framesSinceVerticalChange = 0;
+		}
+		else
+		{
+			controlStick_.framesSinceVerticalChange++;
+		}
+	}
+	else if (axisPercentageGreaterThan(Axis::Y, 25))
+	{
+		if (controlStick_.verticalDir != CardinalDirections::Down)
+		{
+			controlStick_.verticalDir = CardinalDirections::Down;
+			controlStick_.framesSinceVerticalChange = 0;
+		}
+		else
+		{
+			controlStick_.framesSinceVerticalChange++;
+		}
+	}
+	else
+	{
+		controlStick_.verticalDir = CardinalDirections::None;
+		controlStick_.framesSinceVerticalChange = 0;
+	}
+	// Update the state of the V-axis
+	if (axisPercentageLessThan(Axis::V, -25))
+	{
+		if (cStick_.horizontalDir != CardinalDirections::Left)
+		{
+			cStick_.horizontalDir = CardinalDirections::Left;
+			cStick_.framesSinceHorizontalChange = 0;
+		}
+		else
+		{
+			cStick_.framesSinceHorizontalChange++;
+		}
+	}
+	else if (axisPercentageGreaterThan(Axis::V, 25))
+	{
+		if (cStick_.horizontalDir != CardinalDirections::Right)
+		{
+			cStick_.horizontalDir = CardinalDirections::Right;
+			cStick_.framesSinceHorizontalChange = 0;
+		}
+		else
+		{
+			cStick_.framesSinceHorizontalChange++;
+		}
+	}
+	else
+	{
+		cStick_.horizontalDir = CardinalDirections::None;
+		cStick_.framesSinceHorizontalChange = 0;
+	}
+	// Update the state of the U-axis
+	if (axisPercentageLessThan(Axis::U, -25))
+	{
+		if (cStick_.verticalDir != CardinalDirections::Up)
+		{
+			cStick_.verticalDir = CardinalDirections::Up;
+			cStick_.framesSinceVerticalChange = 0;
+		}
+		else
+		{
+			cStick_.framesSinceVerticalChange++;
+		}
+	}
+	else if (axisPercentageGreaterThan(Axis::U, 25))
+	{
+		if (cStick_.verticalDir != CardinalDirections::Down)
+		{
+			cStick_.verticalDir = CardinalDirections::Down;
+			cStick_.framesSinceVerticalChange = 0;
+		}
+		else
+		{
+			cStick_.framesSinceVerticalChange++;
+		}
+	}
+	else
+	{
+		cStick_.verticalDir = CardinalDirections::None;
+		cStick_.framesSinceVerticalChange = 0;
 	}
 }
