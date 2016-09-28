@@ -50,7 +50,7 @@ Player::Player(Controller* controller, Direction direction, float xOffset)
 	}
 }
 
-void Player::update(Stage &stage)
+void Player::update(Stage& stage)
 {
 	checkForStateChange();
 	pos_ = playerBox_.getPosition();

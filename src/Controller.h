@@ -44,30 +44,38 @@ struct Controls
 class Controller
 {
 public:
-	enum class CardinalDirections { Up, Down, Left, Right, None };
+	typedef sf::Joystick::Axis Axis;
 
 	Controller();
 	Controller(unsigned int controllerId, Controls controls);
 
-	void update();
 	Controls* getControls(); // hopefully find a way to get rid of this
-	CardinalDirections getStickDirection() const;
-	int getFramesSinceStickDirectionChange() const;
-	float getAxisPosition(sf::Joystick::Axis axis) const;
-	bool axisPercentageGreaterThan(sf::Joystick::Axis axis, float percent);
-	bool axisPercentageLessThan(sf::Joystick::Axis axis, float percent);
-	bool axisPercentageBetween(sf::Joystick::Axis axis, float percentOne, float percentTwo);
+	void update();
+	float getAxisPosition(Axis axis) const;
+	bool axisPercentageGreaterThan(Axis axis, float percent);
+	bool axisPercentageLessThan(Axis axis, float percent);
+	bool axisPercentageBetween(Axis axis, float percentOne, float percentTwo);
 	int getControlStickAngle();
+	bool controlStickAngleBetween(int angleOne, int angleTwo);
 	bool buttonPressed(Button& button);
+	bool cardinalDirectionChange(Axis axis, int frames);
 
 private:
+	enum class CardinalDirections { Up, Down, Left, Right, None };
+
+	struct Stick
+	{
+		CardinalDirections horizontalDir = CardinalDirections::None;
+		CardinalDirections verticalDir = CardinalDirections::None;
+		int framesSinceHorizontalChange = 0, framesSinceVerticalChange = 0;
+	};
+
 	void checkHeldButtons();
-	void checkStickDirection();
+	void checkStickDirections();
 
 	Controls controls_;
-	CardinalDirections stickDirection_ = CardinalDirections::None;
+	Stick controlStick_, cStick_;
 	unsigned int controllerId_;
-	int framesSinceStickDirectionChange_ = 0;
-};
+	};
 
 #endif // CONTROLLER_H_

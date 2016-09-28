@@ -57,21 +57,21 @@ void IdleState::handleInput(Player& player, Controller* controller)
 	// B presses
 	else if (controller->buttonPressed(controller->getControls()->B))
 	{
-		if (controller->axisPercentageLessThan(Axis::Y, -50) && controller->axisPercentageBetween(Axis::X, -50, 50) ||
-			controller->axisPercentageLessThan(Axis::Y, -75) && controller->getControlStickAngle() > 53 && controller->getControlStickAngle() < 127)
+		if (controller->axisPercentageLessThan(Axis::Y, -55) && controller->axisPercentageBetween(Axis::X, -55, 55) ||
+			controller->axisPercentageLessThan(Axis::Y, -75) && controller->controlStickAngleBetween(53, 127))
 		{
 			std::cout << "up b\n";
 			return;
 		}
-		else if (controller->axisPercentageGreaterThan(Axis::Y, 50) && controller->axisPercentageBetween(Axis::X, -50, 50) ||
-			controller->axisPercentageGreaterThan(Axis::Y, 75) && controller->getControlStickAngle() > 233 && controller->getControlStickAngle() < 307)
+		else if (controller->axisPercentageGreaterThan(Axis::Y, 55) && controller->axisPercentageBetween(Axis::X, -55, 55) ||
+			     controller->axisPercentageGreaterThan(Axis::Y, 75) && controller->controlStickAngleBetween(233, 307))
 		{
 			std::cout << "down b\n";
 			return;
 		}
-		else if (controller->axisPercentageGreaterThan(Axis::X, 50))
+		else if (controller->axisPercentageGreaterThan(Axis::X, 55))
 		{
-			if (controller->getControlStickAngle() >= 0 && controller->getControlStickAngle() < 54 || controller->getControlStickAngle() > 306 && controller->getControlStickAngle() < 360)
+			if (controller->controlStickAngleBetween(0, 54) || controller->controlStickAngleBetween(306, 360))
 			{
 				if (player.getDirection() == Player::Direction::Left)
 				{
@@ -81,9 +81,9 @@ void IdleState::handleInput(Player& player, Controller* controller)
 				return;
 			}
 		}
-		else if (controller->axisPercentageLessThan(Axis::X, -50))
+		else if (controller->axisPercentageLessThan(Axis::X, -55))
 		{
-			if (controller->getControlStickAngle() > 126 && controller->getControlStickAngle() < 234)
+			if (controller->controlStickAngleBetween(126, 234))
 			{
 				if (player.getDirection() == Player::Direction::Right)
 				{
@@ -102,25 +102,47 @@ void IdleState::handleInput(Player& player, Controller* controller)
 	// A presses
 	else if (controller->buttonPressed(controller->getControls()->A))
 	{
-		if (controller->axisPercentageLessThan(Axis::Y, -70))
+		if (controller->axisPercentageLessThan(Axis::Y, -66))
 		{
-			if (controller->getControlStickAngle() > 42 && controller->getControlStickAngle() < 138)
+			if (controller->controlStickAngleBetween(43, 137))
 			{
-				player.setNextState(new UpSmashState());
-				return;
+				if (controller->cardinalDirectionChange(Axis::Y, 4))
+				{
+					player.setNextState(new UpSmashState());
+					return;
+				}
+				else
+				{
+					if (controller->controlStickAngleBetween(50, 130))
+					{
+						player.setNextState(new UpTiltState());
+						return;
+					}
+				}
 			}
 		}
-		else if (controller->axisPercentageGreaterThan(Axis::Y, 70))
+		else if (controller->axisPercentageGreaterThan(Axis::Y, 66))
 		{
-			if (controller->getControlStickAngle() > 222 && controller->getControlStickAngle() < 318)
+			if (controller->controlStickAngleBetween(222, 318))
 			{
-				player.setNextState(new DownSmashState());
-				return;
+				if (controller->cardinalDirectionChange(Axis::Y, 4))
+				{
+					player.setNextState(new DownSmashState());
+					return;
+				}
+				else
+				{
+					if (controller->controlStickAngleBetween(230, 310))
+					{
+						player.setNextState(new DownTiltState());
+						return;
+					}
+				}
 			}
 		}
 		else if (controller->axisPercentageGreaterThan(Axis::X, 75))
 		{
-			if (controller->getControlStickAngle() >= 0 && controller->getControlStickAngle() < 38 || controller->getControlStickAngle() > 322 && controller->getControlStickAngle() < 360)
+			if (controller->controlStickAngleBetween(0, 38) || controller->controlStickAngleBetween(322, 360))
 			{
 				if (player.getDirection() == Player::Direction::Left)
 				{
@@ -132,7 +154,7 @@ void IdleState::handleInput(Player& player, Controller* controller)
 		}
 		else if (controller->axisPercentageLessThan(Axis::X, -75))
 		{
-			if (controller->getControlStickAngle() > 142 && controller->getControlStickAngle() < 218)
+			if (controller->controlStickAngleBetween(142, 218))
 			{
 				if (player.getDirection() == Player::Direction::Right)
 				{
@@ -142,17 +164,17 @@ void IdleState::handleInput(Player& player, Controller* controller)
 				return;
 			}
 		}
-		else if (controller->axisPercentageLessThan(Axis::Y, -20) && controller->axisPercentageGreaterThan(Axis::Y, -70))
+		else if (controller->axisPercentageBetween(Axis::Y, -70, -20))
 		{
-			if (controller->getControlStickAngle() > 50 && controller->getControlStickAngle() < 130)
+			if (controller->controlStickAngleBetween(50, 130))
 			{
 				player.setNextState(new UpTiltState());
 				return;
 			}
 		}
-		else if (controller->axisPercentageGreaterThan(Axis::Y, 20) && controller->axisPercentageLessThan(Axis::Y, 70))
+		else if (controller->axisPercentageBetween(Axis::Y, 20, 70))
 		{
-			if (controller->getControlStickAngle() > 230 && controller->getControlStickAngle() < 310)
+			if (controller->controlStickAngleBetween(230, 310))
 			{
 				player.setNextState(new DownTiltState());
 				return;
@@ -190,15 +212,18 @@ void IdleState::handleInput(Player& player, Controller* controller)
 		return;
 	}
 	// Control Stick presses
-	else if (controller->axisPercentageLessThan(Axis::Y, -70))
+	else if (controller->axisPercentageLessThan(Axis::Y, -66))
 	{
 		if (controller->getControlStickAngle() > 42 && controller->getControlStickAngle() < 138)
 		{
-			player.setNextState(new JumpSquatState());
-			return;
+			if (controller->cardinalDirectionChange(Axis::Y, 4))
+			{
+				player.setNextState(new JumpSquatState());
+				return;
+			}
 		}
 	}
-	else if (controller->axisPercentageGreaterThan(Axis::Y, 70))
+	else if (controller->axisPercentageGreaterThan(Axis::Y, 66))
 	{
 		if (controller->getControlStickAngle() > 222 && controller->getControlStickAngle() < 318)
 		{
