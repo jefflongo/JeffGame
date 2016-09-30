@@ -35,11 +35,15 @@ public:
 
 	enum class CardinalDirections { Up, Down, Left, Right, None };
 
+	// Always initialize framesSinceChange members as 0 and CardinalDirections as None
+
+	// Assign axes to the stick?
 	struct Stick
 	{
-		CardinalDirections horizontalDir = CardinalDirections::None;
-		CardinalDirections verticalDir = CardinalDirections::None;
-		int framesSinceHorizontalChange = 0, framesSinceVerticalChange = 0;
+		//Axis horizontal, vertical;
+		float radius;
+		int framesSinceHorizontalChange, framesSinceVerticalChange;
+		CardinalDirections horizontalDir, verticalDir;
 	};
 
 	struct Button
@@ -49,9 +53,11 @@ public:
 		//unsigned int framesHeld;
 	};
 
+	// Make these all Controller members initialized by constructor.  Controller methods for each button
 	struct Controls
 	{
-		float ANALOG_STICK_RADIUS, C_STICK_RADIUS, SHOULDER_MIN, SHOULDER_MAX;
+		Stick controlStick, cStick;
+		float SHOULDER_MIN, SHOULDER_MAX;
 		Button A, B, X, Y, Z, R, L, START, D_PAD_UP, D_PAD_LEFT, D_PAD_DOWN, D_PAD_RIGHT;
 	};
 
@@ -76,7 +82,6 @@ private:
 	void checkStickDirections();
 
 	Controls controls_;
-	Stick controlStick_, cStick_;
 	unsigned int controllerId_;
 };
 
