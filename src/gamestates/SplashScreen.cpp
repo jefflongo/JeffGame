@@ -64,7 +64,9 @@ void SplashScreen::pollForStart(Game& game)
 				controllerId = i;
 				controls =
 				{
-					80.0, 50.0, -100.0, 60.0,
+					{ 80.0, 0, 0, Controller::CardinalDirections::None, Controller::CardinalDirections::None },
+					{ 50.0, 0, 0, Controller::CardinalDirections::None, Controller::CardinalDirections::None },
+					-100.0, 60.0,
 					{ 0, true },{ 1, true },{ 2, true },{ 3, true },{ 4, true },{ 5, true },{ 6, true },{ 7, true },{ 8, true },{ 9, true },{ 10, true },{ 11, true }
 				};
 				controller = new Controller(controllerId, controls);
@@ -81,7 +83,9 @@ void SplashScreen::pollForStart(Game& game)
 				controllerId = i;
 				controls =
 				{
-					100.0, 100.0, 0.0, 100.0,
+					{ 100.0, 0, 0, Controller::CardinalDirections::None, Controller::CardinalDirections::None },
+					{ 100.0, 0, 0, Controller::CardinalDirections::None, Controller::CardinalDirections::None },
+					0.0, 100.0,
 					{ 0, true },{ 2, true },{ 1, true },{ 3, true },{ 5, true },{ 4, true },{ 6, true },{ 7, true },{ 8, true },{ 9, true },{ 10, true },{ 11, true }
 				};
 				controller = new Controller(controllerId, controls);

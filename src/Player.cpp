@@ -211,7 +211,7 @@ void Player::fastFall()
 
 void Player::move()
 {
-	float analogInfluence = controller_->getAxisPosition(sf::Joystick::Axis::X) / controller_->getControls()->ANALOG_STICK_RADIUS;
+	float analogInfluence = controller_->getAxisPosition(sf::Joystick::Axis::X) / controller_->getControls()->controlStick.radius;
 
 	if (analogInfluence > 1)
 	{
