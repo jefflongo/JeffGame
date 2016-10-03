@@ -27,10 +27,10 @@ public:
 	void setAnimation(std::string animID, int widthOffset = 0, int heightOffset = 0, float angle = 0);
 	void setOnScreenState(std::string text);
 
-	sf::Vector2f getPos() const { return pos_; }
-	sf::Vector2f getVelo() const { return velo_; }
-	Direction getDirection() const { return direction_; }
-	bool isOnGround() const { return onGround_; }
+	sf::Vector2f getPos() const;
+	sf::Vector2f getVelo() const;
+	Direction getDirection() const;
+	bool isOnGround() const;
 
 	void changeDirection();
 	void jump();

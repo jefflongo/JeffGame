@@ -41,11 +41,9 @@ void SplashScreen::destroy()
 
 void SplashScreen::pollForStart(Game& game)
 {
-	static bool startPressed = false;
-	static unsigned int controllerId;
-	static Controller::Controls controls;
+	const static int NUM_OF_BUTTONS = 11;
 	static Controller* controller = nullptr; // TODO: when do we delete this??
-	static int fadeTimer = 100;
+	static bool startPressed = false;
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Return))
 	{
@@ -61,15 +59,21 @@ void SplashScreen::pollForStart(Game& game)
 			// Check for a start button press
 			if (sf::Joystick::isButtonPressed(i, 7))
 			{
-				controllerId = i;
-				controls =
-				{
-					{ 80.0, 0, 0, Controller::CardinalDirections::None, Controller::CardinalDirections::None },
-					{ 50.0, 0, 0, Controller::CardinalDirections::None, Controller::CardinalDirections::None },
-					-100.0, 60.0,
-					{ 0, true },{ 1, true },{ 2, true },{ 3, true },{ 4, true },{ 5, true },{ 6, true },{ 7, true },{ 8, true },{ 9, true },{ 10, true },{ 11, true }
-				};
-				controller = new Controller(controllerId, controls);
+				controller = new Controller(i);
+				controller->setControlStick(80.0);
+				controller->setCStick(50.0);
+				controller->mapKey(Controller::ButtonName::A, 0);
+				controller->mapKey(Controller::ButtonName::B, 1);
+				controller->mapKey(Controller::ButtonName::X, 2);
+				controller->mapKey(Controller::ButtonName::Y, 3);
+				controller->mapKey(Controller::ButtonName::Z, 4);
+				controller->mapKey(Controller::ButtonName::R, 5);
+				controller->mapKey(Controller::ButtonName::L, 6);
+				controller->mapKey(Controller::ButtonName::START, 7);
+				controller->mapKey(Controller::ButtonName::D_PAD_UP, 8);
+				controller->mapKey(Controller::ButtonName::D_PAD_LEFT, 9);
+				controller->mapKey(Controller::ButtonName::D_PAD_DOWN, 10);
+				controller->mapKey(Controller::ButtonName::D_PAD_RIGHT, 11);
 				startPressed = true;
 				break;
 			}
@@ -80,15 +84,21 @@ void SplashScreen::pollForStart(Game& game)
 			// Check for a start button press
 			if (sf::Joystick::isButtonPressed(i, 7))
 			{
-				controllerId = i;
-				controls =
-				{
-					{ 100.0, 0, 0, Controller::CardinalDirections::None, Controller::CardinalDirections::None },
-					{ 100.0, 0, 0, Controller::CardinalDirections::None, Controller::CardinalDirections::None },
-					0.0, 100.0,
-					{ 0, true },{ 2, true },{ 1, true },{ 3, true },{ 5, true },{ 4, true },{ 6, true },{ 7, true },{ 8, true },{ 9, true },{ 10, true },{ 11, true }
-				};
-				controller = new Controller(controllerId, controls);
+				controller = new Controller(i);
+				controller->setControlStick(100.0);
+				controller->setCStick(100.0);
+				controller->mapKey(Controller::ButtonName::A, 0);
+				controller->mapKey(Controller::ButtonName::B, 2);
+				controller->mapKey(Controller::ButtonName::X, 1);
+				controller->mapKey(Controller::ButtonName::Y, 3);
+				controller->mapKey(Controller::ButtonName::Z, 5);
+				controller->mapKey(Controller::ButtonName::R, 4);
+				controller->mapKey(Controller::ButtonName::L, 6);
+				controller->mapKey(Controller::ButtonName::START, 7);
+				controller->mapKey(Controller::ButtonName::D_PAD_UP, 8);
+				controller->mapKey(Controller::ButtonName::D_PAD_LEFT, 9);
+				controller->mapKey(Controller::ButtonName::D_PAD_DOWN, 10);
+				controller->mapKey(Controller::ButtonName::D_PAD_RIGHT, 11);
 				startPressed = true;
 				break;
 			}
@@ -96,16 +106,15 @@ void SplashScreen::pollForStart(Game& game)
 	}
 	if (startPressed)
 	{
-		static int vol = 100;
+		static int vol = 100, fadeTimer = 100;
 		if (--vol > 0)
 		{
 			theme_.setVolume(static_cast<float>(vol));
 		}
-		if (fadeTimer == 0)
+		if (fadeTimer-- == 0)
 		{
 			game.setState(new Battle(controller));
 		}
-		fadeTimer--;
 	}
 }
 
@@ -134,7 +143,6 @@ void SplashScreen::moveText()
 	{
 		pressStartText_.move(0, -1);
 	}
-
 	counter--;
 	if (counter == 0)
 	{

@@ -3,6 +3,7 @@
 
 #define _USE_MATH_DEFINES
 
+#include <map>
 #include <math.h>
 #include "SFML/Graphics.hpp"
 
@@ -33,14 +34,12 @@ class Controller
 public:
 	typedef sf::Joystick::Axis Axis;
 
+	enum class ButtonName { A, B, X, Y, Z, R, L, START, D_PAD_UP, D_PAD_LEFT, D_PAD_DOWN, D_PAD_RIGHT };
 	enum class CardinalDirections { Up, Down, Left, Right, None };
 
-	// Always initialize framesSinceChange members as 0 and CardinalDirections as None
-
-	// Assign axes to the stick?
 	struct Stick
 	{
-		//Axis horizontal, vertical;
+		//Axis horizontal, vertical; should there be axes?
 		float radius;
 		int framesSinceHorizontalChange, framesSinceVerticalChange;
 		CardinalDirections horizontalDir, verticalDir;
@@ -53,24 +52,20 @@ public:
 		//unsigned int framesHeld;
 	};
 
-	// Make these all Controller members initialized by constructor.  Controller methods for each button
-	struct Controls
-	{
-		Stick controlStick, cStick;
-		float SHOULDER_MIN, SHOULDER_MAX;
-		Button A, B, X, Y, Z, R, L, START, D_PAD_UP, D_PAD_LEFT, D_PAD_DOWN, D_PAD_RIGHT;
-	};
-
 	Controller();
-	Controller(unsigned int controllerId, Controls controls);
+	Controller(unsigned int controllerId);
 
 	void update();
 
-	Controls* getControls(); // hopefully find a way to get rid of this
+	void setControlStick(float radius);
+	void setCStick(float radius);
+	void setShoulderAnalog(float min, float max);
+	void mapKey(ButtonName name, unsigned int id);
+
 	float getAxisPosition(Axis axis) const;
 	int getControlStickAngle() const;
 
-	bool buttonPressed(Button& button);
+	bool buttonPressed(ButtonName name);
 	bool axisPercentageGreaterThan(Axis axis, float percent);
 	bool axisPercentageLessThan(Axis axis, float percent);
 	bool axisPercentageBetween(Axis axis, float percentOne, float percentTwo);
@@ -81,8 +76,10 @@ private:
 	void checkHeldButtons();
 	void checkStickDirections();
 
-	Controls controls_;
 	unsigned int controllerId_;
+	std::map<ButtonName, Button> buttonMap_;
+	Stick CONTROL_STICK_, C_STICK_;
+	float SHOULDER_MIN_ = 0, SHOULDER_MAX_ = 0;
 };
 
 #endif // CONTROLLER_H_

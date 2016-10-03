@@ -178,6 +178,26 @@ void Player::setOnScreenState(std::string text)
 	playerstateText_.setString(text);
 }
 
+sf::Vector2f Player::getPos() const 
+{
+	return pos_;
+}
+
+sf::Vector2f Player::getVelo() const 
+{ 
+	return velo_; 
+}
+
+Player::Direction Player::getDirection() const 
+{
+	return direction_; 
+}
+
+bool Player::isOnGround() const 
+{ 
+	return onGround_; 
+}
+
 void Player::changeDirection()
 {
 	if (onGround_)
