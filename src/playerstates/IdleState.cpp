@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "SFML/Graphics.hpp"
+#include "../Globals.h"
 #include "../Player.h"
 #include "../Controller.h"
 
@@ -40,10 +41,10 @@ void IdleState::handleInput(Player& player, Controller* controller)
 	}
 
 	// L/R presses
-	if (controller->buttonPressed(controller->getControls()->L) || controller->buttonPressed(controller->getControls()->R))
+	if (controller->buttonPressed(ButtonName::L) || controller->buttonPressed(ButtonName::R))
 	{
 		// TODO: Add analog shielding eventually
-		if (controller->buttonPressed(controller->getControls()->A))
+		if (controller->buttonPressed(ButtonName::A))
 		{
 			player.setNextState(new GrabState());
 			return;
@@ -55,10 +56,12 @@ void IdleState::handleInput(Player& player, Controller* controller)
 		}
 	}
 	// B presses
-	else if (controller->buttonPressed(controller->getControls()->B))
+	else if (controller->buttonPressed(ButtonName::B))
 	{
-		if (controller->axisPercentageLessThan(Axis::Y, -55) && controller->axisPercentageBetween(Axis::X, -55, 55) ||
-			controller->axisPercentageLessThan(Axis::Y, -75) && controller->controlStickAngleBetween(53, 127))
+		if (controller->getStickPosition(StickName::CONTROL_STICK).y < -55 && 
+		Globals::valueBetween(controller->getStickPosition(StickName::CONTROL_STICK).x, -55, 55) ||
+		controller->getStickPosition(StickName::CONTROL_STICK).y < -75 &&
+		Globals::valueBetween(controller->getStickAngle(StickName::CONTROL_STICK), 53, 127))
 		{
 			std::cout << "up b\n";
 			return;
@@ -100,7 +103,7 @@ void IdleState::handleInput(Player& player, Controller* controller)
 		}
 	}
 	// A presses
-	else if (controller->buttonPressed(controller->getControls()->A))
+	else if (controller->buttonPressed(ButtonName::A))
 	{
 		if (controller->axisPercentageLessThan(Axis::Y, -66))
 		{
@@ -194,19 +197,19 @@ void IdleState::handleInput(Player& player, Controller* controller)
 		}
 	}
 	// X/Y presses
-	else if (controller->buttonPressed(controller->getControls()->X) || controller->buttonPressed(controller->getControls()->Y))
+	else if (controller->buttonPressed(ButtonName::X) || controller->buttonPressed(ButtonName::Y))
 	{
 		player.setNextState(new JumpSquatState());
 		return;
 	}
 	// Z presses
-	else if (controller->buttonPressed(controller->getControls()->Z))
+	else if (controller->buttonPressed(ButtonName::Z))
 	{
 		player.setNextState(new GrabState());
 		return;
 	}
 	// D-Pad presses
-	else if (controller->buttonPressed(controller->getControls()->D_PAD_UP))
+	else if (controller->buttonPressed(ButtonName::D_PAD_UP))
 	{
 		player.setNextState(new TauntState());
 		return;
