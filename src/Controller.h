@@ -29,20 +29,48 @@ Button 10  - D-pad down
 Button 11  - D-pad right
 */
 
+enum class StickName { CONTROL_STICK, C_STICK };
+enum class ShoulderName { L, R };
+enum class ButtonName { A, B, X, Y, Z, R, L, START, D_PAD_UP, D_PAD_LEFT, D_PAD_DOWN, D_PAD_RIGHT };
+enum class CardinalDirections { Up, Down, Left, Right, None };
+
 class Controller
 {
 public:
 	typedef sf::Joystick::Axis Axis;
 
-	enum class ButtonName { A, B, X, Y, Z, R, L, START, D_PAD_UP, D_PAD_LEFT, D_PAD_DOWN, D_PAD_RIGHT };
-	enum class CardinalDirections { Up, Down, Left, Right, None };
+	Controller();
+	Controller(unsigned int controllerId);
 
+	void update();
+
+	void mapStick(StickName name, Axis x, Axis y, float radius);
+	void mapShoulder(ShoulderName name, Axis axis, float min, float max);
+	void mapButton(ButtonName name, unsigned int id);
+
+	sf::Vector2f getStickPosition(StickName name) const;
+	sf::Vector2f getStickPositionPercentage(StickName name) const;
+	int getStickAngle(StickName name) const;
+	sf::Vector2f getFramesSinceDirectionChange(StickName name) const;
+	float getShoulderPosition(ShoulderName name) const;
+	float getShoulderPositionPercentage(ShoulderName name) const;
+
+	bool buttonPressed(ButtonName name);
+	bool cardinalDirectionChange(Axis axis, int frames);
+
+private:
 	struct Stick
 	{
-		//Axis horizontal, vertical; should there be axes?
+		Axis x, y;
 		float radius;
-		int framesSinceHorizontalChange, framesSinceVerticalChange;
+		sf::Vector2f framesSinceChange;
 		CardinalDirections horizontalDir, verticalDir;
+	};
+
+	struct Shoulder
+	{
+		Axis axis;
+		float min, max;
 	};
 
 	struct Button
@@ -52,34 +80,13 @@ public:
 		//unsigned int framesHeld;
 	};
 
-	Controller();
-	Controller(unsigned int controllerId);
-
-	void update();
-
-	void setControlStick(float radius);
-	void setCStick(float radius);
-	void setShoulderAnalog(float min, float max);
-	void mapKey(ButtonName name, unsigned int id);
-
-	float getAxisPosition(Axis axis) const;
-	int getControlStickAngle() const;
-
-	bool buttonPressed(ButtonName name);
-	bool axisPercentageGreaterThan(Axis axis, float percent);
-	bool axisPercentageLessThan(Axis axis, float percent);
-	bool axisPercentageBetween(Axis axis, float percentOne, float percentTwo);
-	bool controlStickAngleBetween(int angleOne, int angleTwo);
-	bool cardinalDirectionChange(Axis axis, int frames);
-
-private:
-	void checkHeldButtons();
 	void checkStickDirections();
+	void checkHeldButtons();
 
 	unsigned int controllerId_;
+	std::map<StickName, Stick> stickMap_;
 	std::map<ButtonName, Button> buttonMap_;
-	Stick CONTROL_STICK_, C_STICK_;
-	float SHOULDER_MIN_ = 0, SHOULDER_MAX_ = 0;
+	std::map<ShoulderName, Shoulder> shoulderMap_;
 };
 
 #endif // CONTROLLER_H_

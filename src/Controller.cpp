@@ -1,6 +1,6 @@
 #include "Controller.h"
 
-Controller::Controller(){}
+Controller::Controller() {}
 
 Controller::Controller(unsigned int controllerId)
 {
@@ -9,75 +9,99 @@ Controller::Controller(unsigned int controllerId)
 
 void Controller::update()
 {
-	checkHeldButtons();
 	checkStickDirections();
+	checkHeldButtons();
 }
 
-void Controller::setControlStick(float radius)
+void Controller::mapStick(StickName name, Axis x, Axis y, float radius)
 {
-	CONTROL_STICK_.radius = radius;
-	CONTROL_STICK_.framesSinceHorizontalChange = CONTROL_STICK_.framesSinceVerticalChange = 0;
-	CONTROL_STICK_.horizontalDir = CONTROL_STICK_.verticalDir = CardinalDirections::None;
+	stickMap_.at(name) = { x, y, radius,{ 0, 0 }, CardinalDirections::None, CardinalDirections::None };
 }
 
-void Controller::setCStick(float radius)
+void Controller::mapShoulder(ShoulderName name, Axis axis, float min, float max)
 {
-	C_STICK_.radius = radius;
-	C_STICK_.framesSinceHorizontalChange = C_STICK_.framesSinceVerticalChange = 0;
-	C_STICK_.horizontalDir = C_STICK_.verticalDir = CardinalDirections::None;
+	shoulderMap_.at(name) = { axis, min, max };
 }
 
-void Controller::setShoulderAnalog(float min, float max)
-{
-	SHOULDER_MIN_ = min;
-	SHOULDER_MAX_ = max;
-}
-
-void Controller::mapKey(ButtonName name, unsigned int id)
+void Controller::mapButton(ButtonName name, unsigned int id)
 {
 	buttonMap_.at(name) = { id, false };
 }
 
-float Controller::getAxisPosition(Axis axis) const
+sf::Vector2f Controller::getStickPosition(StickName name) const
 {
-	float pos = sf::Joystick::getAxisPosition(controllerId_, axis), deadzone = 0;
-
-	switch (axis)
+	float deadzone = 0.275f;
+	Stick stick = stickMap_.at(name);
+	sf::Vector2f pos;
+	pos.x = sf::Joystick::getAxisPosition(controllerId_, stick.x);
+	pos.y = sf::Joystick::getAxisPosition(controllerId_, stick.y);
+	if (pos.x >= -deadzone*stick.radius && pos.x <= deadzone*stick.radius)
 	{
-	case Axis::X:
-	case Axis::Y:
-		deadzone = 0.275f;
-		if (pos >= -deadzone*CONTROL_STICK_.radius && pos <= deadzone*CONTROL_STICK_.radius)
-		{
-			pos = 0;
-		}
-		break;
-	case Axis::V:
-	case Axis::U:
-		deadzone = 0.275f;
-		if (pos >= -deadzone*C_STICK_.radius && pos <= deadzone*C_STICK_.radius)
-		{
-			pos = 0;
-		}
-		break;
-		break;
-	case sf::Joystick::Axis::Z:
-	case sf::Joystick::Axis::R:
-		// TODO: Add deadzone, 0.30
-		pos -= SHOULDER_MIN_;
-		break;
-	default:
-		break;
+		pos.x = 0;
+	}
+	if (pos.y >= -deadzone*stick.radius && pos.y <= deadzone*stick.radius)
+	{
+		pos.y = 0;
 	}
 	return pos;
 }
 
-int Controller::getControlStickAngle() const
+sf::Vector2f Controller::getStickPositionPercentage(StickName name) const
 {
+	Stick stick = stickMap_.at(name);
+	sf::Vector2f pos = getStickPosition(name);
+	pos.x *= 100 / stick.radius;
+	pos.y *= 100 / stick.radius;
+	if (pos.x > 100)
+	{
+		pos.x = 100;
+	}
+	if (pos.y > 100)
+	{
+		pos.y = 100;
+	}
+	return pos;
+}
+
+int Controller::getStickAngle(StickName name) const
+{
+	Stick stick = stickMap_.at(name);
+	sf::Vector2f pos = getStickPosition(name);
 	// -atan due to SFML's Y-axis orientation
-	float angle = -atan2f(getAxisPosition(Axis::Y), getAxisPosition(Axis::X)) * 180 / static_cast<float>(M_PI);
+	float angle = -atan2f(pos.y, pos.x) * 180 / static_cast<float>(M_PI);
 	// Add 0.5 to fix rounding truncation and add 360 followed by modulo 360 to always get a positive angle
 	return static_cast<int>(angle + 0.5 + 360) % 360;
+}
+
+sf::Vector2f Controller::getFramesSinceDirectionChange(StickName name) const
+{
+	return stickMap_.at(name).framesSinceChange;
+}
+
+float Controller::getShoulderPosition(ShoulderName name) const
+{
+	float deadzone = 0.30f; // TODO: check this
+	Shoulder shoulder = shoulderMap_.at(name);
+	float pos = sf::Joystick::getAxisPosition(controllerId_, shoulder.axis);
+	pos -= shoulder.min;
+	if (pos > deadzone*(shoulder.max - shoulder.min)) // TODO: test
+	{
+		pos = shoulder.min;
+	}
+	return pos;
+}
+
+float Controller::getShoulderPositionPercentage(ShoulderName name) const
+{
+	Shoulder shoulder = shoulderMap_.at(name);
+	float pos = getShoulderPosition(name);
+	pos -= shoulder.min;
+	pos *= 100 / (shoulder.max - shoulder.min); // TODO: test
+	if (pos > 100)
+	{
+		pos = 100;
+	}
+	return pos;
 }
 
 bool Controller::buttonPressed(ButtonName name)
@@ -94,119 +118,127 @@ bool Controller::buttonPressed(ButtonName name)
 	}
 }
 
-bool Controller::axisPercentageGreaterThan(Axis axis, float percent)
+void Controller::checkStickDirections()
 {
-	float max;
-
-	switch (axis)
+	// Update the state of the control stick X-axis
+	if (getStickPosition(StickName::CONTROL_STICK).x < -25)
 	{
-	case sf::Joystick::Axis::X:
-	case sf::Joystick::Axis::Y:
-	{
-		max = CONTROL_STICK_.radius;
-	}
-	break;
-	case sf::Joystick::Axis::V:
-	case sf::Joystick::Axis::U:
-	{
-		max = C_STICK_.radius;
-	}
-	break;
-	case sf::Joystick::Axis::Z:
-	case sf::Joystick::Axis::R:
-	{
-		// TODO: Test
-		if (percent < 0)
+		if (stickMap_.at(StickName::CONTROL_STICK).horizontalDir != CardinalDirections::Left)
 		{
-			return true;
+			stickMap_.at(StickName::CONTROL_STICK).horizontalDir = CardinalDirections::Left;
+			stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.x = 0;
 		}
-		max = SHOULDER_MAX_ - SHOULDER_MIN_;
-	}
-	break;
-	default:
-		max = 0;
-		break;
-	}
-	return (getAxisPosition(axis) > 0.01*percent*max) ? true : false;
-}
-
-bool Controller::axisPercentageLessThan(sf::Joystick::Axis axis, float percent)
-{
-	float max;
-
-	switch (axis)
-	{
-	case sf::Joystick::Axis::X:
-	case sf::Joystick::Axis::Y:
-	{
-		max = CONTROL_STICK_.radius;
-	}
-	break;
-	case sf::Joystick::Axis::V:
-	case sf::Joystick::Axis::U:
-	{
-		max = C_STICK_.radius;
-	}
-	break;
-	case sf::Joystick::Axis::Z:
-	case sf::Joystick::Axis::R:
-	{
-		// TODO: Test
-		if (percent < 0)
+		else
 		{
-			return true;
+			stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.x++;
 		}
-		max = SHOULDER_MAX_ - SHOULDER_MIN_;
 	}
-	break;
-	default:
-		max = 0;
-		break;
-	}
-	return (getAxisPosition(axis) < 0.01*percent*max) ? true : false;
-}
-
-bool Controller::axisPercentageBetween(Axis axis, float percentOne, float percentTwo)
-{
-	if (percentOne > percentTwo)
+	else if (getStickPosition(StickName::CONTROL_STICK).x > 25)
 	{
-		float temp = percentOne;
-		percentOne = percentTwo;
-		percentTwo = temp;
+		if (stickMap_.at(StickName::CONTROL_STICK).horizontalDir != CardinalDirections::Right)
+		{
+			stickMap_.at(StickName::CONTROL_STICK).horizontalDir = CardinalDirections::Right;
+			stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.x = 0;
+		}
+		else
+		{
+			stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.x++;
+		}
 	}
-	return (axisPercentageGreaterThan(axis, percentOne) && axisPercentageLessThan(axis, percentTwo)) ? true : false;
-}
-
-bool Controller::controlStickAngleBetween(int angleOne, int angleTwo)
-{
-	if (angleOne > angleTwo)
+	else
 	{
-		int temp = angleOne;
-		angleOne = angleTwo;
-		angleTwo = temp;
+		stickMap_.at(StickName::CONTROL_STICK).horizontalDir = CardinalDirections::None;
+		stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.x = 0;
 	}
-	return (getControlStickAngle() >= angleOne && getControlStickAngle() <= angleTwo) ? true : false;
-}
-
-bool Controller::cardinalDirectionChange(Axis axis, int frames)
-{
-	switch (axis)
+	// Update the state of the control stick Y-axis
+	if (getStickPosition(StickName::CONTROL_STICK).y < -25)
 	{
-	case Axis::X:
-		return (CONTROL_STICK_.framesSinceHorizontalChange <= frames) ? true : false;
-		break;
-	case Axis::Y:
-		return (CONTROL_STICK_.framesSinceVerticalChange <= frames) ? true : false;
-		break;
-	case Axis::V:
-		return (C_STICK_.framesSinceHorizontalChange <= frames) ? true : false;
-		break;
-	case Axis::U:
-		return (C_STICK_.framesSinceVerticalChange <= frames) ? true : false;
-		break;
-	default:
-		return false;
-		break;
+		if (stickMap_.at(StickName::CONTROL_STICK).verticalDir != CardinalDirections::Up)
+		{
+			stickMap_.at(StickName::CONTROL_STICK).verticalDir = CardinalDirections::Up;
+			stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.y = 0;
+		}
+		else
+		{
+			stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.y++;
+		}
+	}
+	else if (getStickPosition(StickName::CONTROL_STICK).y > 25)
+	{
+		if (stickMap_.at(StickName::CONTROL_STICK).verticalDir != CardinalDirections::Down)
+		{
+			stickMap_.at(StickName::CONTROL_STICK).verticalDir = CardinalDirections::Down;
+			stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.y = 0;
+		}
+		else
+		{
+			stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.y++;
+		}
+	}
+	else
+	{
+		stickMap_.at(StickName::CONTROL_STICK).verticalDir = CardinalDirections::None;
+		stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.y = 0;
+	}
+	// Update the state of the c stick X-axis
+	if (getStickPosition(StickName::C_STICK).x < -25)
+	{
+		if (stickMap_.at(StickName::C_STICK).horizontalDir != CardinalDirections::Left)
+		{
+			stickMap_.at(StickName::C_STICK).horizontalDir = CardinalDirections::Left;
+			stickMap_.at(StickName::C_STICK).framesSinceChange.x = 0;
+		}
+		else
+		{
+			stickMap_.at(StickName::C_STICK).framesSinceChange.x++;
+		}
+	}
+	else if (getStickPosition(StickName::C_STICK).x > 25)
+	{
+		if (stickMap_.at(StickName::C_STICK).horizontalDir != CardinalDirections::Right)
+		{
+			stickMap_.at(StickName::C_STICK).horizontalDir = CardinalDirections::Right;
+			stickMap_.at(StickName::C_STICK).framesSinceChange.x = 0;
+		}
+		else
+		{
+			stickMap_.at(StickName::C_STICK).framesSinceChange.x++;
+		}
+	}
+	else
+	{
+		stickMap_.at(StickName::C_STICK).horizontalDir = CardinalDirections::None;
+		stickMap_.at(StickName::C_STICK).framesSinceChange.x = 0;
+	}
+	// Update the state of the c stick Y-axis
+	if (getStickPosition(StickName::C_STICK).y < -25)
+	{
+		if (stickMap_.at(StickName::C_STICK).verticalDir != CardinalDirections::Up)
+		{
+			stickMap_.at(StickName::C_STICK).verticalDir = CardinalDirections::Up;
+			stickMap_.at(StickName::C_STICK).framesSinceChange.y = 0;
+		}
+		else
+		{
+			stickMap_.at(StickName::C_STICK).framesSinceChange.y++;
+		}
+	}
+	else if (getStickPosition(StickName::C_STICK).y > 25)
+	{
+		if (stickMap_.at(StickName::C_STICK).verticalDir != CardinalDirections::Down)
+		{
+			stickMap_.at(StickName::C_STICK).verticalDir = CardinalDirections::Down;
+			stickMap_.at(StickName::C_STICK).framesSinceChange.y = 0;
+		}
+		else
+		{
+			stickMap_.at(StickName::C_STICK).framesSinceChange.y++;
+		}
+	}
+	else
+	{
+		stickMap_.at(StickName::C_STICK).verticalDir = CardinalDirections::None;
+		stickMap_.at(StickName::C_STICK).framesSinceChange.y = 0;
 	}
 }
 
@@ -240,7 +272,6 @@ void Controller::checkHeldButtons()
 			buttonMap_.at(ButtonName::Y).held = false;
 		}
 	}
-
 	if (buttonMap_.at(ButtonName::Z).held)
 	{
 		if (!sf::Joystick::isButtonPressed(controllerId_, buttonMap_.at(ButtonName::Z).id))
@@ -296,129 +327,5 @@ void Controller::checkHeldButtons()
 		{
 			buttonMap_.at(ButtonName::D_PAD_RIGHT).held = false;
 		}
-	}
-}
-
-void Controller::checkStickDirections()
-{
-	// Update the state of the X-axis
-	if (axisPercentageLessThan(Axis::X, -25))
-	{
-		if (CONTROL_STICK_.horizontalDir != CardinalDirections::Left)
-		{
-			CONTROL_STICK_.horizontalDir = CardinalDirections::Left;
-			CONTROL_STICK_.framesSinceHorizontalChange = 0;
-		}
-		else
-		{
-			CONTROL_STICK_.framesSinceHorizontalChange++;
-		}
-	}
-	else if (axisPercentageGreaterThan(Axis::X, 25))
-	{
-		if (CONTROL_STICK_.horizontalDir != CardinalDirections::Right)
-		{
-			CONTROL_STICK_.horizontalDir = CardinalDirections::Right;
-			CONTROL_STICK_.framesSinceHorizontalChange = 0;
-		}
-		else
-		{
-			CONTROL_STICK_.framesSinceHorizontalChange++;
-		}
-	}
-	else
-	{
-		CONTROL_STICK_.horizontalDir = CardinalDirections::None;
-		CONTROL_STICK_.framesSinceHorizontalChange = 0;
-	}
-	// Update the state of the Y-axis
-	if (axisPercentageLessThan(Axis::Y, -25))
-	{
-		if (CONTROL_STICK_.verticalDir != CardinalDirections::Up)
-		{
-			CONTROL_STICK_.verticalDir = CardinalDirections::Up;
-			CONTROL_STICK_.framesSinceVerticalChange = 0;
-		}
-		else
-		{
-			CONTROL_STICK_.framesSinceVerticalChange++;
-		}
-	}
-	else if (axisPercentageGreaterThan(Axis::Y, 25))
-	{
-		if (CONTROL_STICK_.verticalDir != CardinalDirections::Down)
-		{
-			CONTROL_STICK_.verticalDir = CardinalDirections::Down;
-			CONTROL_STICK_.framesSinceVerticalChange = 0;
-		}
-		else
-		{
-			CONTROL_STICK_.framesSinceVerticalChange++;
-		}
-	}
-	else
-	{
-		CONTROL_STICK_.verticalDir = CardinalDirections::None;
-		CONTROL_STICK_.framesSinceVerticalChange = 0;
-	}
-	// Update the state of the V-axis
-	if (axisPercentageLessThan(Axis::V, -25))
-	{
-		if (C_STICK_.horizontalDir != CardinalDirections::Left)
-		{
-			C_STICK_.horizontalDir = CardinalDirections::Left;
-			C_STICK_.framesSinceHorizontalChange = 0;
-		}
-		else
-		{
-			C_STICK_.framesSinceHorizontalChange++;
-		}
-	}
-	else if (axisPercentageGreaterThan(Axis::V, 25))
-	{
-		if (C_STICK_.horizontalDir != CardinalDirections::Right)
-		{
-			C_STICK_.horizontalDir = CardinalDirections::Right;
-			C_STICK_.framesSinceHorizontalChange = 0;
-		}
-		else
-		{
-			C_STICK_.framesSinceHorizontalChange++;
-		}
-	}
-	else
-	{
-		C_STICK_.horizontalDir = CardinalDirections::None;
-		C_STICK_.framesSinceHorizontalChange = 0;
-	}
-	// Update the state of the U-axis
-	if (axisPercentageLessThan(Axis::U, -25))
-	{
-		if (C_STICK_.verticalDir != CardinalDirections::Up)
-		{
-			C_STICK_.verticalDir = CardinalDirections::Up;
-			C_STICK_.framesSinceVerticalChange = 0;
-		}
-		else
-		{
-			C_STICK_.framesSinceVerticalChange++;
-		}
-	}
-	else if (axisPercentageGreaterThan(Axis::U, 25))
-	{
-		if (C_STICK_.verticalDir != CardinalDirections::Down)
-		{
-			C_STICK_.verticalDir = CardinalDirections::Down;
-			C_STICK_.framesSinceVerticalChange = 0;
-		}
-		else
-		{
-			C_STICK_.framesSinceVerticalChange++;
-		}
-	}
-	else
-	{
-		C_STICK_.verticalDir = CardinalDirections::None;
-		C_STICK_.framesSinceVerticalChange = 0;
 	}
 }

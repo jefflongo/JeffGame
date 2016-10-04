@@ -231,21 +231,7 @@ void Player::fastFall()
 
 void Player::move()
 {
-	float analogInfluence = controller_->getAxisPosition(sf::Joystick::Axis::X) / controller_->getControls()->controlStick.radius;
-
-	if (analogInfluence > 1)
-	{
-		analogInfluence = 1;
-	}
-	else if (analogInfluence < -1)
-	{
-		analogInfluence = -1;
-	}
-	else if (analogInfluence > -0.05 && analogInfluence < 0.05)
-	{
-		analogInfluence = 0;
-	}
-
+	float analogInfluence = controller_->getStickPositionPercentage(StickName::CONTROL_STICK).x / 100;
 	if (onGround_)
 	{
 		velo_.x += ACCEL*analogInfluence;
