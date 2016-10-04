@@ -60,20 +60,22 @@ void SplashScreen::pollForStart(Game& game)
 			if (sf::Joystick::isButtonPressed(i, 7))
 			{
 				controller = new Controller(i);
-				controller->setControlStick(80.0);
-				controller->setCStick(50.0);
-				controller->mapKey(Controller::ButtonName::A, 0);
-				controller->mapKey(Controller::ButtonName::B, 1);
-				controller->mapKey(Controller::ButtonName::X, 2);
-				controller->mapKey(Controller::ButtonName::Y, 3);
-				controller->mapKey(Controller::ButtonName::Z, 4);
-				controller->mapKey(Controller::ButtonName::R, 5);
-				controller->mapKey(Controller::ButtonName::L, 6);
-				controller->mapKey(Controller::ButtonName::START, 7);
-				controller->mapKey(Controller::ButtonName::D_PAD_UP, 8);
-				controller->mapKey(Controller::ButtonName::D_PAD_LEFT, 9);
-				controller->mapKey(Controller::ButtonName::D_PAD_DOWN, 10);
-				controller->mapKey(Controller::ButtonName::D_PAD_RIGHT, 11);
+				controller->mapStick(StickName::CONTROL_STICK, sf::Joystick::Axis::X, sf::Joystick::Axis::Y, 80.0);
+				controller->mapStick(StickName::C_STICK, sf::Joystick::Axis::V, sf::Joystick::Axis::U, 80.0);
+				controller->mapShoulder(ShoulderName::L, sf::Joystick::Axis::Z, -100, 60);
+				controller->mapShoulder(ShoulderName::R, sf::Joystick::Axis::R, -100, 60);
+				controller->mapButton(ButtonName::A, 0);
+				controller->mapButton(ButtonName::B, 1);
+				controller->mapButton(ButtonName::X, 2);
+				controller->mapButton(ButtonName::Y, 3);
+				controller->mapButton(ButtonName::Z, 4);
+				controller->mapButton(ButtonName::R, 5);
+				controller->mapButton(ButtonName::L, 6);
+				controller->mapButton(ButtonName::START, 7);
+				controller->mapButton(ButtonName::D_PAD_UP, 8);
+				controller->mapButton(ButtonName::D_PAD_LEFT, 9);
+				controller->mapButton(ButtonName::D_PAD_DOWN, 10);
+				controller->mapButton(ButtonName::D_PAD_RIGHT, 11);
 				startPressed = true;
 				break;
 			}
@@ -85,20 +87,22 @@ void SplashScreen::pollForStart(Game& game)
 			if (sf::Joystick::isButtonPressed(i, 7))
 			{
 				controller = new Controller(i);
-				controller->setControlStick(100.0);
-				controller->setCStick(100.0);
-				controller->mapKey(Controller::ButtonName::A, 0);
-				controller->mapKey(Controller::ButtonName::B, 2);
-				controller->mapKey(Controller::ButtonName::X, 1);
-				controller->mapKey(Controller::ButtonName::Y, 3);
-				controller->mapKey(Controller::ButtonName::Z, 5);
-				controller->mapKey(Controller::ButtonName::R, 4);
-				controller->mapKey(Controller::ButtonName::L, 6);
-				controller->mapKey(Controller::ButtonName::START, 7);
-				controller->mapKey(Controller::ButtonName::D_PAD_UP, 8);
-				controller->mapKey(Controller::ButtonName::D_PAD_LEFT, 9);
-				controller->mapKey(Controller::ButtonName::D_PAD_DOWN, 10);
-				controller->mapKey(Controller::ButtonName::D_PAD_RIGHT, 11);
+				controller->mapStick(StickName::CONTROL_STICK, sf::Joystick::Axis::X, sf::Joystick::Axis::Y, 100.0);
+				controller->mapStick(StickName::C_STICK, sf::Joystick::Axis::V, sf::Joystick::Axis::U, 100.0);
+				controller->mapShoulder(ShoulderName::L, sf::Joystick::Axis::Z, 0, 60);
+				controller->mapShoulder(ShoulderName::R, sf::Joystick::Axis::R, 0, 100);
+				controller->mapButton(ButtonName::A, 0);
+				controller->mapButton(ButtonName::B, 2);
+				controller->mapButton(ButtonName::X, 1);
+				controller->mapButton(ButtonName::Y, 3);
+				controller->mapButton(ButtonName::Z, 5);
+				controller->mapButton(ButtonName::R, 4);
+				controller->mapButton(ButtonName::L, 6);
+				controller->mapButton(ButtonName::START, 7);
+				controller->mapButton(ButtonName::D_PAD_UP, 8);
+				controller->mapButton(ButtonName::D_PAD_LEFT, 9);
+				controller->mapButton(ButtonName::D_PAD_DOWN, 10);
+				controller->mapButton(ButtonName::D_PAD_RIGHT, 11);
 				startPressed = true;
 				break;
 			}

@@ -1,20 +1,22 @@
 #ifndef GLOBALS_H_
 #define GLOBALS_H_
 
-//#include <string>
-//#include <sstream>
-
 namespace Globals
 {
 	const unsigned int WINDOW_WIDTH = 1000, WINDOW_HEIGHT = 600;
 	const float GROUND_OFFSET = 30;
-	/*
-	static std::string intToStr(int x)
+
+	template<typename T1, typename T2>
+	bool valueBetween(T1 val, T2 min, T2 max)
 	{
-		std::stringstream ss;
-		ss << x;
-		return ss.str();
-	}*/
+		if (min > max)
+		{
+			T2 temp = min;
+			min = max;
+			max = temp;
+		}
+		return (val >= min && val <= max) ? true : false;
+	}
 }
 
 #endif // GLOBALS_H_
