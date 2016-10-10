@@ -42,35 +42,42 @@ public:
 	Controller();
 	Controller(unsigned int controllerId);
 
+	// Updates the sticks' cardinal directions and the state of the buttons
 	void update();
 
-	void mapStick(StickName name, Axis x, Axis y, float radius);
-	void mapShoulder(ShoulderName name, Axis axis, float min, float max);
+	// Map an x-axis, y-axis, and radius to a stick
+	void mapStick(StickName name, Axis x, Axis y, float radius, float deadzone);
+	// Map an axis and range for a shoulder
+	void mapShoulder(ShoulderName name, Axis axis, float min, float max, float deadzone);
+	// Map an id to a button
 	void mapButton(ButtonName name, unsigned int id);
 
+	// Returns a 2d vector with values between -1 and 1
 	sf::Vector2f getStickPosition(StickName name) const;
-	sf::Vector2f getStickPositionPercentage(StickName name) const;
-	int getStickAngle(StickName name) const;
-	sf::Vector2f getFramesSinceDirectionChange(StickName name) const;
+	// Returns a value between 0 and 1
 	float getShoulderPosition(ShoulderName name) const;
-	float getShoulderPositionPercentage(ShoulderName name) const;
+	// Returns the angle of the stick with values between 0 and 360
+	int getStickAngle(StickName name) const;
+	// Returns a 2d vector with frames since a cardinal direction change 
+	// for the x and y position of the stick
+	sf::Vector2u getFramesSinceDirectionChange(StickName name) const;
 
+	// Returns true for a given button's initial press and sets it to held, else false
 	bool buttonPressed(ButtonName name);
-	bool cardinalDirectionChange(Axis axis, int frames);
 
 private:
 	struct Stick
 	{
 		Axis x, y;
-		float radius;
-		sf::Vector2f framesSinceChange;
+		float radius, deadzone;
+		sf::Vector2u framesSinceChange;
 		CardinalDirections horizontalDir, verticalDir;
 	};
 
 	struct Shoulder
 	{
 		Axis axis;
-		float min, max;
+		float min, max, deadzone;
 	};
 
 	struct Button

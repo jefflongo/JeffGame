@@ -13,14 +13,24 @@ void Controller::update()
 	checkHeldButtons();
 }
 
-void Controller::mapStick(StickName name, Axis x, Axis y, float radius)
+void Controller::mapStick(StickName name, Axis x, Axis y, float radius, float deadzone)
 {
-	stickMap_.at(name) = { x, y, radius,{ 0, 0 }, CardinalDirections::None, CardinalDirections::None };
+	// To avoid division by 0
+	if (radius == 0)
+	{
+		radius = 1;
+	}
+	stickMap_.at(name) = { x, y, abs(radius), deadzone, { 0, 0 }, CardinalDirections::None, CardinalDirections::None };
 }
 
-void Controller::mapShoulder(ShoulderName name, Axis axis, float min, float max)
+void Controller::mapShoulder(ShoulderName name, Axis axis, float min, float max, float deadzone)
 {
-	shoulderMap_.at(name) = { axis, min, max };
+	// To avoid division by 0
+	if (min == max)
+	{
+		min = max - 1;
+	}
+	shoulderMap_.at(name) = { axis, min, max, deadzone };
 }
 
 void Controller::mapButton(ButtonName name, unsigned int id)
@@ -30,35 +40,48 @@ void Controller::mapButton(ButtonName name, unsigned int id)
 
 sf::Vector2f Controller::getStickPosition(StickName name) const
 {
-	float deadzone = 0.275f;
 	Stick stick = stickMap_.at(name);
 	sf::Vector2f pos;
-	pos.x = sf::Joystick::getAxisPosition(controllerId_, stick.x);
-	pos.y = sf::Joystick::getAxisPosition(controllerId_, stick.y);
-	if (pos.x >= -deadzone*stick.radius && pos.x <= deadzone*stick.radius)
+	pos.x = sf::Joystick::getAxisPosition(controllerId_, stick.x) / stick.radius;
+	pos.y = sf::Joystick::getAxisPosition(controllerId_, stick.y) / stick.radius;
+	if (abs(pos.x) <= stick.deadzone)
 	{
 		pos.x = 0;
 	}
-	if (pos.y >= -deadzone*stick.radius && pos.y <= deadzone*stick.radius)
+	else if (pos.x > 1)
+	{
+		pos.x = 1;
+	}
+	else if (pos.x < -1)
+	{
+		pos.x = -1;
+	}
+	if (abs(pos.y) <= stick.deadzone)
 	{
 		pos.y = 0;
+	}
+	else if (pos.y > 1)
+	{
+		pos.y = 1;
+	}
+	else if (pos.y < -1)
+	{
+		pos.y = -1;
 	}
 	return pos;
 }
 
-sf::Vector2f Controller::getStickPositionPercentage(StickName name) const
+float Controller::getShoulderPosition(ShoulderName name) const
 {
-	Stick stick = stickMap_.at(name);
-	sf::Vector2f pos = getStickPosition(name);
-	pos.x *= 100 / stick.radius;
-	pos.y *= 100 / stick.radius;
-	if (pos.x > 100)
+	Shoulder shoulder = shoulderMap_.at(name);
+	float pos = (sf::Joystick::getAxisPosition(controllerId_, shoulder.axis) - shoulder.min) / (shoulder.max - shoulder.min);
+	if (pos < shoulder.deadzone)
 	{
-		pos.x = 100;
+		pos = 0;
 	}
-	if (pos.y > 100)
+	else if (pos > 1)
 	{
-		pos.y = 100;
+		pos = 1;
 	}
 	return pos;
 }
@@ -73,35 +96,9 @@ int Controller::getStickAngle(StickName name) const
 	return static_cast<int>(angle + 0.5 + 360) % 360;
 }
 
-sf::Vector2f Controller::getFramesSinceDirectionChange(StickName name) const
+sf::Vector2u Controller::getFramesSinceDirectionChange(StickName name) const
 {
 	return stickMap_.at(name).framesSinceChange;
-}
-
-float Controller::getShoulderPosition(ShoulderName name) const
-{
-	float deadzone = 0.30f; // TODO: check this
-	Shoulder shoulder = shoulderMap_.at(name);
-	float pos = sf::Joystick::getAxisPosition(controllerId_, shoulder.axis);
-	pos -= shoulder.min;
-	if (pos > deadzone*(shoulder.max - shoulder.min)) // TODO: test
-	{
-		pos = shoulder.min;
-	}
-	return pos;
-}
-
-float Controller::getShoulderPositionPercentage(ShoulderName name) const
-{
-	Shoulder shoulder = shoulderMap_.at(name);
-	float pos = getShoulderPosition(name);
-	pos -= shoulder.min;
-	pos *= 100 / (shoulder.max - shoulder.min); // TODO: test
-	if (pos > 100)
-	{
-		pos = 100;
-	}
-	return pos;
 }
 
 bool Controller::buttonPressed(ButtonName name)
@@ -120,212 +117,82 @@ bool Controller::buttonPressed(ButtonName name)
 
 void Controller::checkStickDirections()
 {
-	// Update the state of the control stick X-axis
-	if (getStickPosition(StickName::CONTROL_STICK).x < -25)
+	// Iterate through the map
+	for (auto& i : stickMap_)
 	{
-		if (stickMap_.at(StickName::CONTROL_STICK).horizontalDir != CardinalDirections::Left)
+		sf::Vector2f pos = getStickPosition(i.first);
+		// Update the state of the x-axis
+		if (pos.x < -0.25)
 		{
-			stickMap_.at(StickName::CONTROL_STICK).horizontalDir = CardinalDirections::Left;
-			stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.x = 0;
+			if (i.second.horizontalDir != CardinalDirections::Left)
+			{
+				i.second.horizontalDir = CardinalDirections::Left;
+				i.second.framesSinceChange.x = 0;
+			}
+			else
+			{
+				i.second.framesSinceChange.x++;
+			}
+		}
+		else if (pos.x > 0.25)
+		{
+			if (i.second.horizontalDir != CardinalDirections::Right)
+			{
+				i.second.horizontalDir = CardinalDirections::Right;
+				i.second.framesSinceChange.x = 0;
+			}
+			else
+			{
+				i.second.framesSinceChange.x++;
+			}
 		}
 		else
 		{
-			stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.x++;
+			i.second.horizontalDir = CardinalDirections::None;
+			i.second.framesSinceChange.x = 0;
 		}
-	}
-	else if (getStickPosition(StickName::CONTROL_STICK).x > 25)
-	{
-		if (stickMap_.at(StickName::CONTROL_STICK).horizontalDir != CardinalDirections::Right)
+		// Update the state of the y-axis
+		if (pos.y < -0.25)
 		{
-			stickMap_.at(StickName::CONTROL_STICK).horizontalDir = CardinalDirections::Right;
-			stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.x = 0;
+			if (i.second.verticalDir != CardinalDirections::Up)
+			{
+				i.second.verticalDir = CardinalDirections::Up;
+				i.second.framesSinceChange.y = 0;
+			}
+			else
+			{
+				i.second.framesSinceChange.y++;
+			}
+		}
+		else if (pos.y > 0.25)
+		{
+			if (i.second.verticalDir != CardinalDirections::Down)
+			{
+				i.second.verticalDir = CardinalDirections::Down;
+				i.second.framesSinceChange.y = 0;
+			}
+			else
+			{
+				i.second.framesSinceChange.y++;
+			}
 		}
 		else
 		{
-			stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.x++;
+			i.second.verticalDir = CardinalDirections::None;
+			i.second.framesSinceChange.y = 0;
 		}
-	}
-	else
-	{
-		stickMap_.at(StickName::CONTROL_STICK).horizontalDir = CardinalDirections::None;
-		stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.x = 0;
-	}
-	// Update the state of the control stick Y-axis
-	if (getStickPosition(StickName::CONTROL_STICK).y < -25)
-	{
-		if (stickMap_.at(StickName::CONTROL_STICK).verticalDir != CardinalDirections::Up)
-		{
-			stickMap_.at(StickName::CONTROL_STICK).verticalDir = CardinalDirections::Up;
-			stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.y = 0;
-		}
-		else
-		{
-			stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.y++;
-		}
-	}
-	else if (getStickPosition(StickName::CONTROL_STICK).y > 25)
-	{
-		if (stickMap_.at(StickName::CONTROL_STICK).verticalDir != CardinalDirections::Down)
-		{
-			stickMap_.at(StickName::CONTROL_STICK).verticalDir = CardinalDirections::Down;
-			stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.y = 0;
-		}
-		else
-		{
-			stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.y++;
-		}
-	}
-	else
-	{
-		stickMap_.at(StickName::CONTROL_STICK).verticalDir = CardinalDirections::None;
-		stickMap_.at(StickName::CONTROL_STICK).framesSinceChange.y = 0;
-	}
-	// Update the state of the c stick X-axis
-	if (getStickPosition(StickName::C_STICK).x < -25)
-	{
-		if (stickMap_.at(StickName::C_STICK).horizontalDir != CardinalDirections::Left)
-		{
-			stickMap_.at(StickName::C_STICK).horizontalDir = CardinalDirections::Left;
-			stickMap_.at(StickName::C_STICK).framesSinceChange.x = 0;
-		}
-		else
-		{
-			stickMap_.at(StickName::C_STICK).framesSinceChange.x++;
-		}
-	}
-	else if (getStickPosition(StickName::C_STICK).x > 25)
-	{
-		if (stickMap_.at(StickName::C_STICK).horizontalDir != CardinalDirections::Right)
-		{
-			stickMap_.at(StickName::C_STICK).horizontalDir = CardinalDirections::Right;
-			stickMap_.at(StickName::C_STICK).framesSinceChange.x = 0;
-		}
-		else
-		{
-			stickMap_.at(StickName::C_STICK).framesSinceChange.x++;
-		}
-	}
-	else
-	{
-		stickMap_.at(StickName::C_STICK).horizontalDir = CardinalDirections::None;
-		stickMap_.at(StickName::C_STICK).framesSinceChange.x = 0;
-	}
-	// Update the state of the c stick Y-axis
-	if (getStickPosition(StickName::C_STICK).y < -25)
-	{
-		if (stickMap_.at(StickName::C_STICK).verticalDir != CardinalDirections::Up)
-		{
-			stickMap_.at(StickName::C_STICK).verticalDir = CardinalDirections::Up;
-			stickMap_.at(StickName::C_STICK).framesSinceChange.y = 0;
-		}
-		else
-		{
-			stickMap_.at(StickName::C_STICK).framesSinceChange.y++;
-		}
-	}
-	else if (getStickPosition(StickName::C_STICK).y > 25)
-	{
-		if (stickMap_.at(StickName::C_STICK).verticalDir != CardinalDirections::Down)
-		{
-			stickMap_.at(StickName::C_STICK).verticalDir = CardinalDirections::Down;
-			stickMap_.at(StickName::C_STICK).framesSinceChange.y = 0;
-		}
-		else
-		{
-			stickMap_.at(StickName::C_STICK).framesSinceChange.y++;
-		}
-	}
-	else
-	{
-		stickMap_.at(StickName::C_STICK).verticalDir = CardinalDirections::None;
-		stickMap_.at(StickName::C_STICK).framesSinceChange.y = 0;
 	}
 }
 
 void Controller::checkHeldButtons()
 {
-	if (buttonMap_.at(ButtonName::A).held)
+	// Iterate through the map
+	for (auto& i : buttonMap_)
 	{
-		if (!sf::Joystick::isButtonPressed(controllerId_, buttonMap_.at(ButtonName::A).id))
+		// If the button is not held and its state is currently held, update the state
+		if (!sf::Joystick::isButtonPressed(controllerId_, i.second.id) && i.second.held)
 		{
-			buttonMap_.at(ButtonName::A).held = false;
-		}
-	}
-	if (buttonMap_.at(ButtonName::B).held)
-	{
-		if (!sf::Joystick::isButtonPressed(controllerId_, buttonMap_.at(ButtonName::B).id))
-		{
-			buttonMap_.at(ButtonName::B).held = false;
-		}
-	}
-	if (buttonMap_.at(ButtonName::X).held)
-	{
-		if (!sf::Joystick::isButtonPressed(controllerId_, buttonMap_.at(ButtonName::X).id))
-		{
-			buttonMap_.at(ButtonName::X).held = false;
-		}
-	}
-	if (buttonMap_.at(ButtonName::Y).held)
-	{
-		if (!sf::Joystick::isButtonPressed(controllerId_, buttonMap_.at(ButtonName::Y).id))
-		{
-			buttonMap_.at(ButtonName::Y).held = false;
-		}
-	}
-	if (buttonMap_.at(ButtonName::Z).held)
-	{
-		if (!sf::Joystick::isButtonPressed(controllerId_, buttonMap_.at(ButtonName::Z).id))
-		{
-			buttonMap_.at(ButtonName::Z).held = false;
-		}
-	}
-	if (buttonMap_.at(ButtonName::R).held)
-	{
-		if (!sf::Joystick::isButtonPressed(controllerId_, buttonMap_.at(ButtonName::R).id))
-		{
-			buttonMap_.at(ButtonName::R).held = false;
-		}
-	}
-	if (buttonMap_.at(ButtonName::L).held)
-	{
-		if (!sf::Joystick::isButtonPressed(controllerId_, buttonMap_.at(ButtonName::L).id))
-		{
-			buttonMap_.at(ButtonName::L).held = false;
-		}
-	}
-	if (buttonMap_.at(ButtonName::START).held)
-	{
-		if (!sf::Joystick::isButtonPressed(controllerId_, buttonMap_.at(ButtonName::START).id))
-		{
-			buttonMap_.at(ButtonName::START).held = false;
-		}
-	}
-	if (buttonMap_.at(ButtonName::D_PAD_UP).held)
-	{
-		if (!sf::Joystick::isButtonPressed(controllerId_, buttonMap_.at(ButtonName::D_PAD_UP).id))
-		{
-			buttonMap_.at(ButtonName::D_PAD_UP).held = false;
-		}
-	}
-	if (buttonMap_.at(ButtonName::D_PAD_LEFT).held)
-	{
-		if (!sf::Joystick::isButtonPressed(controllerId_, buttonMap_.at(ButtonName::D_PAD_LEFT).id))
-		{
-			buttonMap_.at(ButtonName::D_PAD_LEFT).held = false;
-		}
-	}
-	if (buttonMap_.at(ButtonName::D_PAD_DOWN).held)
-	{
-		if (!sf::Joystick::isButtonPressed(controllerId_, buttonMap_.at(ButtonName::D_PAD_DOWN).id))
-		{
-			buttonMap_.at(ButtonName::D_PAD_DOWN).held = false;
-		}
-	}
-	if (buttonMap_.at(ButtonName::D_PAD_RIGHT).held)
-	{
-		if (!sf::Joystick::isButtonPressed(controllerId_, buttonMap_.at(ButtonName::D_PAD_RIGHT).id))
-		{
-			buttonMap_.at(ButtonName::D_PAD_RIGHT).held = false;
+			i.second.held = false;
 		}
 	}
 }

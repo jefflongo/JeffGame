@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "SFML/Graphics.hpp"
+#include "../Globals.h"
 #include "../Player.h"
 #include "../Controller.h"
 
@@ -22,7 +23,7 @@ void JumpSquatState::handleInput(Player& player, Controller* controller)
 		return;
 	}
 
-	if (controller->buttonPressed(controller->getControls()->A))
+	if (controller->buttonPressed(ButtonName::A))
 	{
 		if (controller->axisPercentageLessThan(Axis::Y, -70))
 		{

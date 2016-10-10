@@ -58,9 +58,9 @@ void IdleState::handleInput(Player& player, Controller* controller)
 	// B presses
 	else if (controller->buttonPressed(ButtonName::B))
 	{
-		if (controller->getStickPosition(StickName::CONTROL_STICK).y < -55 && 
-		Globals::valueBetween(controller->getStickPosition(StickName::CONTROL_STICK).x, -55, 55) ||
-		controller->getStickPosition(StickName::CONTROL_STICK).y < -75 &&
+		if (controller->getStickPosition(StickName::CONTROL_STICK).y < -0.55 && 
+		Globals::valueBetween(controller->getStickPosition(StickName::CONTROL_STICK).x, -0.55, 0.55) ||
+		controller->getStickPosition(StickName::CONTROL_STICK).y < -0.75 &&
 		Globals::valueBetween(controller->getStickAngle(StickName::CONTROL_STICK), 53, 127))
 		{
 			std::cout << "up b\n";

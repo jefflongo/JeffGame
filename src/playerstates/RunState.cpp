@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "SFML/Graphics.hpp"
+#include "../Globals.h"
 #include "../Player.h"
 #include "../Controller.h"
 
@@ -28,10 +29,10 @@ void RunState::handleInput(Player& player, Controller* controller)
 	}
 
 	// L/R presses
-	if (controller->buttonPressed(controller->getControls()->L) || controller->buttonPressed(controller->getControls()->R))
+	if (controller->buttonPressed(ButtonName::L) || controller->buttonPressed(ButtonName::R))
 	{
 		// add analog shielding eventually
-		if (controller->buttonPressed(controller->getControls()->A))
+		if (controller->buttonPressed(ButtonName::A))
 		{
 			//player.setNextState(new DashGrabState());
 			return;
@@ -48,25 +49,25 @@ void RunState::handleInput(Player& player, Controller* controller)
 		}
 	}
 	// A presses
-	else if (controller->buttonPressed(controller->getControls()->A))
+	else if (controller->buttonPressed(ButtonName::A))
 	{
 		player.setNextState(new DashAttackState());
 		return;
 	}
 	// X/Y presses
-	else if (controller->buttonPressed(controller->getControls()->X) || controller->buttonPressed(controller->getControls()->Y))
+	else if (controller->buttonPressed(ButtonName::X) || controller->buttonPressed(ButtonName::Y))
 	{
 		player.setNextState(new JumpSquatState());
 		return;
 	}
 	// Z presses
-	else if (controller->buttonPressed(controller->getControls()->Z))
+	else if (controller->buttonPressed(ButtonName::Z))
 	{
 		std::cout << "Run grab\n";
 		return;
 	}
 	// D-Pad presses
-	else if (controller->buttonPressed(controller->getControls()->D_PAD_UP))
+	else if (controller->buttonPressed(ButtonName::D_PAD_UP))
 	{
 		player.setNextState(new TauntState());
 		return;

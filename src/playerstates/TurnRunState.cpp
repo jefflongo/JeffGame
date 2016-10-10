@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "SFML/Graphics.hpp"
+#include "../Globals.h"
 #include "../Player.h"
 #include "../Controller.h"
 
@@ -24,8 +25,8 @@ void TurnRunState::handleInput(Player& player, Controller* controller)
 	}
 
 	// X/Y presses
-	if (controller->buttonPressed(controller->getControls()->X) ||
-		controller->buttonPressed(controller->getControls()->Y))
+	if (controller->buttonPressed(ButtonName::X) ||
+		controller->buttonPressed(ButtonName::Y))
 	{
 		player.setNextState(new JumpSquatState());
 		return;

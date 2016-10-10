@@ -42,8 +42,8 @@ void SplashScreen::destroy()
 void SplashScreen::pollForStart(Game& game)
 {
 	const static int NUM_OF_BUTTONS = 11;
-	static Controller* controller = nullptr; // TODO: when do we delete this??
 	static bool startPressed = false;
+	static Controller* controller = nullptr; // TODO: when do we delete this??
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Return))
 	{
@@ -51,7 +51,7 @@ void SplashScreen::pollForStart(Game& game)
 	}
 
 	// Check all available devices
-	for (unsigned int i = 0; i < 6; i++) // TODO: connectedDevices_
+	for (unsigned int i : connectedDevices_)
 	{
 		// Check the current device for a gamecube controller
 		if (sf::Joystick::getIdentification(i).name.toAnsiString() == "vJoy Device")
@@ -60,10 +60,10 @@ void SplashScreen::pollForStart(Game& game)
 			if (sf::Joystick::isButtonPressed(i, 7))
 			{
 				controller = new Controller(i);
-				controller->mapStick(StickName::CONTROL_STICK, sf::Joystick::Axis::X, sf::Joystick::Axis::Y, 80.0);
-				controller->mapStick(StickName::C_STICK, sf::Joystick::Axis::V, sf::Joystick::Axis::U, 80.0);
-				controller->mapShoulder(ShoulderName::L, sf::Joystick::Axis::Z, -100, 60);
-				controller->mapShoulder(ShoulderName::R, sf::Joystick::Axis::R, -100, 60);
+				controller->mapStick(StickName::CONTROL_STICK, sf::Joystick::Axis::X, sf::Joystick::Axis::Y, 80.0, 0.275);
+				controller->mapStick(StickName::C_STICK, sf::Joystick::Axis::V, sf::Joystick::Axis::U, 80.0, 0.275);
+				controller->mapShoulder(ShoulderName::L, sf::Joystick::Axis::Z, -100, 60, 0.3);
+				controller->mapShoulder(ShoulderName::R, sf::Joystick::Axis::R, -100, 60, 0.3);
 				controller->mapButton(ButtonName::A, 0);
 				controller->mapButton(ButtonName::B, 1);
 				controller->mapButton(ButtonName::X, 2);
@@ -87,10 +87,10 @@ void SplashScreen::pollForStart(Game& game)
 			if (sf::Joystick::isButtonPressed(i, 7))
 			{
 				controller = new Controller(i);
-				controller->mapStick(StickName::CONTROL_STICK, sf::Joystick::Axis::X, sf::Joystick::Axis::Y, 100.0);
-				controller->mapStick(StickName::C_STICK, sf::Joystick::Axis::V, sf::Joystick::Axis::U, 100.0);
-				controller->mapShoulder(ShoulderName::L, sf::Joystick::Axis::Z, 0, 60);
-				controller->mapShoulder(ShoulderName::R, sf::Joystick::Axis::R, 0, 100);
+				controller->mapStick(StickName::CONTROL_STICK, sf::Joystick::Axis::X, sf::Joystick::Axis::Y, 100.0, 0.275);
+				controller->mapStick(StickName::C_STICK, sf::Joystick::Axis::V, sf::Joystick::Axis::U, 100.0, 0.275);
+				controller->mapShoulder(ShoulderName::L, sf::Joystick::Axis::Z, 0, 60, 0.3);
+				controller->mapShoulder(ShoulderName::R, sf::Joystick::Axis::R, 0, 100, 0.3);
 				controller->mapButton(ButtonName::A, 0);
 				controller->mapButton(ButtonName::B, 2);
 				controller->mapButton(ButtonName::X, 1);
@@ -122,16 +122,18 @@ void SplashScreen::pollForStart(Game& game)
 	}
 }
 
-// this is only getting the number of devices plugged in
-// index of connected device might be greater than number of devices...
-unsigned int SplashScreen::getConnectedDevices()
+std::vector<unsigned int> SplashScreen::getConnectedDevices()
 {
-	int i = 0;
-	while (sf::Joystick::isConnected(i))
+	std::vector<unsigned int> connectedDevices;
+	for (int i = 0; i < 10; i++)
 	{
-		i++;
+		if (sf::Joystick::isConnected(i))
+		{
+			connectedDevices.push_back(i);
+			i++;
+		}
 	}
-	return i;
+	return connectedDevices;
 }
 
 void SplashScreen::moveText()

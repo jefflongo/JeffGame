@@ -231,7 +231,7 @@ void Player::fastFall()
 
 void Player::move()
 {
-	float analogInfluence = controller_->getStickPositionPercentage(StickName::CONTROL_STICK).x / 100;
+	float analogInfluence = controller_->getStickPosition(StickName::CONTROL_STICK).x;
 	if (onGround_)
 	{
 		velo_.x += ACCEL*analogInfluence;
