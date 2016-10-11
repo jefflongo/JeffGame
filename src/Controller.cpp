@@ -86,6 +86,11 @@ float Controller::getShoulderPosition(ShoulderName name) const
 	return pos;
 }
 
+sf::Vector2u Controller::getFramesSinceDirectionChange(StickName name) const
+{
+	return stickMap_.at(name).framesSinceChange;
+}
+
 int Controller::getStickAngle(StickName name) const
 {
 	Stick stick = stickMap_.at(name);
@@ -94,11 +99,6 @@ int Controller::getStickAngle(StickName name) const
 	float angle = -atan2f(pos.y, pos.x) * 180 / static_cast<float>(M_PI);
 	// Add 0.5 to fix rounding truncation and add 360 followed by modulo 360 to always get a positive angle
 	return static_cast<int>(angle + 0.5 + 360) % 360;
-}
-
-sf::Vector2u Controller::getFramesSinceDirectionChange(StickName name) const
-{
-	return stickMap_.at(name).framesSinceChange;
 }
 
 bool Controller::buttonPressed(ButtonName name)

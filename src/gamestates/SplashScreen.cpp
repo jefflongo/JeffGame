@@ -60,10 +60,10 @@ void SplashScreen::pollForStart(Game& game)
 			if (sf::Joystick::isButtonPressed(i, 7))
 			{
 				controller = new Controller(i);
-				controller->mapStick(StickName::CONTROL_STICK, sf::Joystick::Axis::X, sf::Joystick::Axis::Y, 80.0, 0.275);
-				controller->mapStick(StickName::C_STICK, sf::Joystick::Axis::V, sf::Joystick::Axis::U, 80.0, 0.275);
-				controller->mapShoulder(ShoulderName::L, sf::Joystick::Axis::Z, -100, 60, 0.3);
-				controller->mapShoulder(ShoulderName::R, sf::Joystick::Axis::R, -100, 60, 0.3);
+				controller->mapStick(StickName::CONTROL_STICK, sf::Joystick::Axis::X, sf::Joystick::Axis::Y, 80.0f, 0.275f);
+				controller->mapStick(StickName::C_STICK, sf::Joystick::Axis::V, sf::Joystick::Axis::U, 80.0f, 0.275f);
+				controller->mapShoulder(ShoulderName::L, sf::Joystick::Axis::Z, -100.0f, 60.0f, 0.3f);
+				controller->mapShoulder(ShoulderName::R, sf::Joystick::Axis::R, -100.0f, 60.0f, 0.3f);
 				controller->mapButton(ButtonName::A, 0);
 				controller->mapButton(ButtonName::B, 1);
 				controller->mapButton(ButtonName::X, 2);
@@ -87,10 +87,10 @@ void SplashScreen::pollForStart(Game& game)
 			if (sf::Joystick::isButtonPressed(i, 7))
 			{
 				controller = new Controller(i);
-				controller->mapStick(StickName::CONTROL_STICK, sf::Joystick::Axis::X, sf::Joystick::Axis::Y, 100.0, 0.275);
-				controller->mapStick(StickName::C_STICK, sf::Joystick::Axis::V, sf::Joystick::Axis::U, 100.0, 0.275);
-				controller->mapShoulder(ShoulderName::L, sf::Joystick::Axis::Z, 0, 60, 0.3);
-				controller->mapShoulder(ShoulderName::R, sf::Joystick::Axis::R, 0, 100, 0.3);
+				controller->mapStick(StickName::CONTROL_STICK, sf::Joystick::Axis::X, sf::Joystick::Axis::Y, 100.0f, 0.275f);
+				controller->mapStick(StickName::C_STICK, sf::Joystick::Axis::V, sf::Joystick::Axis::U, 100.0f, 0.275f);
+				controller->mapShoulder(ShoulderName::L, sf::Joystick::Axis::Z, 0, 60.0f, 0.3f);
+				controller->mapShoulder(ShoulderName::R, sf::Joystick::Axis::R, 0, 100.0f, 0.3f);
 				controller->mapButton(ButtonName::A, 0);
 				controller->mapButton(ButtonName::B, 2);
 				controller->mapButton(ButtonName::X, 1);
