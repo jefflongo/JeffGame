@@ -9,7 +9,6 @@ class Controller;
 class PlayerState
 {
 public:
-	typedef sf::Joystick::Axis Axis;
 	virtual void init(Player& player) = 0;
 	virtual void handleInput(Player& player, Controller* controller) = 0;
 	virtual void update(Player& player, Controller* controller) = 0;

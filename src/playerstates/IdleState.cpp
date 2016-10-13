@@ -39,7 +39,10 @@ void IdleState::handleInput(Player& player, Controller* controller)
 	{
 		return;
 	}
-	// Hierarchy of button presses: START->Z->B->L/R->A->X/Y->D_PAD
+	
+	sf::Vector2f controlStickPos = controller->getStickPosition(StickName::CONTROL_STICK);
+	sf::Vector2f cStickPos = controller->getStickPosition(StickName::C_STICK);
+	// Hierarchy of button press priority: START > Z > B > A > C_STICK > L/R > X/Y > D_PAD
 	// Z presses
 	if (controller->buttonPressed(ButtonName::Z))
 	{
@@ -49,7 +52,7 @@ void IdleState::handleInput(Player& player, Controller* controller)
 	// B presses
 	else if (controller->buttonPressed(ButtonName::B))
 	{
-		if (controller->getStickPosition(StickName::CONTROL_STICK).x >= 0.60)
+		if (controlStickPos.x >= 0.60)
 		{
 			if (player.getDirection() == Player::Direction::Left)
 			{
@@ -58,7 +61,7 @@ void IdleState::handleInput(Player& player, Controller* controller)
 			player.setNextState(new ForwardSpecialState());
 			return;
 		}
-		else if (controller->getStickPosition(StickName::CONTROL_STICK).x <= -0.60)
+		else if (controlStickPos.x <= -0.60)
 		{
 			if (player.getDirection() == Player::Direction::Right)
 			{
@@ -67,12 +70,12 @@ void IdleState::handleInput(Player& player, Controller* controller)
 			player.setNextState(new ForwardSpecialState());
 			return;
 		}
-		else if (controller->getStickPosition(StickName::CONTROL_STICK).y <= -0.55)
+		else if (controlStickPos.y <= -0.55)
 		{
 			std::cout << "up b\n";
 			return;
 		}
-		else if (controller->getStickPosition(StickName::CONTROL_STICK).y >= 0.55)
+		else if (controlStickPos.y >= 0.55)
 		{
 			std::cout << "down b\n";
 			return;
@@ -83,25 +86,15 @@ void IdleState::handleInput(Player& player, Controller* controller)
 			return;
 		}
 	}
-	// L/R presses
-	else if (controller->buttonPressed(ButtonName::L) || controller->buttonPressed(ButtonName::R))
+	// A presses
+	else if (controller->buttonPressed(ButtonName::A))
 	{
-		// TODO: Add analog shielding eventually
-		if (controller->buttonPressed(ButtonName::A))
+		if (controller->buttonPressed(ButtonName::L) || controller->buttonPressed(ButtonName::R))
 		{
 			player.setNextState(new GrabState());
 			return;
 		}
-		else
-		{
-			std::cout << "shield\n";
-			return;
-		}
-	}
-	// A presses
-	else if (controller->buttonPressed(ButtonName::A))
-	{
-		if (controller->getStickPosition(StickName::CONTROL_STICK).x >= 0.80)
+		else if (controlStickPos.x >= 0.80)
 		{
 			if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).x <= 4)
 			{
@@ -113,7 +106,7 @@ void IdleState::handleInput(Player& player, Controller* controller)
 				return;
 			}
 		}
-		else if (controller->getStickPosition(StickName::CONTROL_STICK).x <= -0.80)
+		else if (controlStickPos.x <= -0.80)
 		{
 			if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).x <= 4)
 			{
@@ -125,7 +118,7 @@ void IdleState::handleInput(Player& player, Controller* controller)
 				return;
 			}
 		}
-		else if (controller->getStickPosition(StickName::CONTROL_STICK).y <= -0.66)
+		else if (controlStickPos.y <= -0.66)
 		{
 			if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).y <= 4)
 			{
@@ -133,7 +126,7 @@ void IdleState::handleInput(Player& player, Controller* controller)
 				return;
 			}
 		}
-		else if (controller->getStickPosition(StickName::CONTROL_STICK).y >= 0.66)
+		else if (controlStickPos.y >= 0.66)
 		{
 			if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).y <= 4)
 			{
@@ -141,7 +134,7 @@ void IdleState::handleInput(Player& player, Controller* controller)
 				return;
 			}
 		}
-		else if (controller->getStickPosition(StickName::CONTROL_STICK).x > 0)
+		else if (controlStickPos.x >= abs(0.7*controlStickPos.y))
 		{
 			if (player.getDirection == Player::Direction::Right)
 			{
@@ -154,7 +147,7 @@ void IdleState::handleInput(Player& player, Controller* controller)
 				return;
 			}
 		}
-		else if (controller->getStickPosition(StickName::CONTROL_STICK).x < 0)
+		else if (controlStickPos.x <= -abs(0.7*controlStickPos.y))
 		{
 			if (player.getDirection == Player::Direction::Left)
 			{
@@ -167,12 +160,12 @@ void IdleState::handleInput(Player& player, Controller* controller)
 				return;
 			}
 		}
-		else if (controller->getStickPosition(StickName::CONTROL_STICK).y < 0)
+		else if (controlStickPos.y < 0)
 		{
 			player.setNextState(new UpTiltState());
 			return;
 		}
-		else if (controller->getStickPosition(StickName::CONTROL_STICK).y > 0)
+		else if (controlStickPos.y > 0)
 		{
 			player.setNextState(new DownTiltState());
 			return;
@@ -182,6 +175,14 @@ void IdleState::handleInput(Player& player, Controller* controller)
 			player.setNextState(new JabState());
 			return;
 		}
+	}
+	// TODO: C-stick preeses
+	// L/R presses
+	else if (controller->buttonPressed(ButtonName::L) || controller->buttonPressed(ButtonName::R))
+	{
+		// TODO: Add analog shielding eventually
+		std::cout << "shield\n";
+		return;
 	}
 	// X/Y presses
 	else if (controller->buttonPressed(ButtonName::X) || controller->buttonPressed(ButtonName::Y))
@@ -196,7 +197,7 @@ void IdleState::handleInput(Player& player, Controller* controller)
 		return;
 	}
 	// Control Stick presses
-	else if (controller->getStickPosition(StickName::CONTROL_STICK).y <= -0.66)
+	else if (controlStickPos.y <= -0.66)
 	{
 		if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).y <= 4)
 		{
@@ -204,12 +205,12 @@ void IdleState::handleInput(Player& player, Controller* controller)
 			return;
 		}
 	}
-	else if (controller->getStickPosition(StickName::CONTROL_STICK).y >= 0.70)
+	else if (controlStickPos.y >= 0.70)
 	{
 		player.setNextState(new SquatState());
 		return;
 	}
-	else if (controller->getStickPosition(StickName::CONTROL_STICK).x >= 0.80)
+	else if (controlStickPos.x >= 0.80)
 	{
 		if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).x <= 4)
 		{
@@ -226,7 +227,7 @@ void IdleState::handleInput(Player& player, Controller* controller)
 			}
 		}
 	}
-	else if (controller->getStickPosition(StickName::CONTROL_STICK).x <= -0.80)
+	else if (controlStickPos.x <= -0.80)
 	{
 		if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).x <= 4)
 		{
@@ -243,7 +244,7 @@ void IdleState::handleInput(Player& player, Controller* controller)
 			}
 		}
 	}
-	else if (controller->getStickPosition(StickName::CONTROL_STICK).x > 0)
+	else if (controlStickPos.x > 0)
 	{
 		if (player.getDirection() == Player::Direction::Right)
 		{
@@ -257,7 +258,7 @@ void IdleState::handleInput(Player& player, Controller* controller)
 			return;
 		}
 	}
-	else if (controller->getStickPosition(StickName::CONTROL_STICK).x < 0)
+	else if (controlStickPos.x < 0)
 	{
 		if (player.getDirection() == Player::Direction::Left)
 		{

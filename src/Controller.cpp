@@ -42,31 +42,24 @@ sf::Vector2f Controller::getStickPosition(StickName name) const
 {
 	Stick stick = stickMap_.at(name);
 	sf::Vector2f pos;
-	pos.x = sf::Joystick::getAxisPosition(controllerId_, stick.x) / stick.radius;
-	pos.y = sf::Joystick::getAxisPosition(controllerId_, stick.y) / stick.radius;
+	pos.x = sf::Joystick::getAxisPosition(controllerId_, stick.x);
+	pos.y = sf::Joystick::getAxisPosition(controllerId_, stick.y);
+	pos /= stick.radius;
+
+	float mag = sqrt(pos.x*pos.x + pos.y*pos.y);
+	// If the magnitude of the stick position vector is outside the circular range of inputs,
+	// normalize it, by giving it a magnitude of 1 which will lie on the perimeter of the circle
+	if (mag > 1)
+	{
+		pos /= mag;
+	}
 	if (abs(pos.x) <= stick.deadzone)
 	{
 		pos.x = 0;
 	}
-	else if (pos.x > 1)
-	{
-		pos.x = 1;
-	}
-	else if (pos.x < -1)
-	{
-		pos.x = -1;
-	}
 	if (abs(pos.y) <= stick.deadzone)
 	{
 		pos.y = 0;
-	}
-	else if (pos.y > 1)
-	{
-		pos.y = 1;
-	}
-	else if (pos.y < -1)
-	{
-		pos.y = -1;
 	}
 	return pos;
 }

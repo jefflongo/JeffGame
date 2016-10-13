@@ -72,7 +72,9 @@ private:
 	const float TERMINAL_RUN_VELOCITY = 18.0f;
 	const float TERMINAL_JUMP_VELOCITY = 19.0f;
 	const float TERMINAL_FALL_VELOCITY = 20.0f;
+	const float AIR_ACCEL = 5.0f; // air mobility/drift
 	const float AIR_FRICTION = 0.2f;
+	const float TERMINAL_AIR_VELOCITY = 15.0f;
 };
 
 #endif // PLAYER_H_
