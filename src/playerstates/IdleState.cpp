@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include "SFML/Graphics.hpp"
-#include "../Globals.h"
 #include "../Player.h"
 #include "../Controller.h"
 
@@ -29,249 +28,16 @@ void IdleState::init(Player& player)
 
 void IdleState::handleInput(Player& player, Controller* controller)
 {
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
-	{
-		player.setNextState(new JabState());
-		return;
-	}
-
-	if (controller == nullptr)
-	{
-		return;
-	}
-	
-	sf::Vector2f controlStickPos = controller->getStickPosition(StickName::CONTROL_STICK);
-	sf::Vector2f cStickPos = controller->getStickPosition(StickName::C_STICK);
-	// Hierarchy of button press priority: START > Z > B > A > C_STICK > L/R > X/Y > D_PAD
-	// Z presses
-	if (controller->buttonPressed(ButtonName::Z))
-	{
-		player.setNextState(new GrabState());
-		return;
-	}
-	// B presses
-	else if (controller->buttonPressed(ButtonName::B))
-	{
-		if (controlStickPos.x >= 0.60)
-		{
-			if (player.getDirection() == Player::Direction::Left)
-			{
-				player.changeDirection();
-			}
-			player.setNextState(new ForwardSpecialState());
-			return;
-		}
-		else if (controlStickPos.x <= -0.60)
-		{
-			if (player.getDirection() == Player::Direction::Right)
-			{
-				player.changeDirection();
-			}
-			player.setNextState(new ForwardSpecialState());
-			return;
-		}
-		else if (controlStickPos.y <= -0.55)
-		{
-			std::cout << "up b\n";
-			return;
-		}
-		else if (controlStickPos.y >= 0.55)
-		{
-			std::cout << "down b\n";
-			return;
-		}
-		else
-		{
-			std::cout << "neutral b\n";
-			return;
-		}
-	}
-	// A presses
-	else if (controller->buttonPressed(ButtonName::A))
-	{
-		if (controller->buttonPressed(ButtonName::L) || controller->buttonPressed(ButtonName::R))
-		{
-			player.setNextState(new GrabState());
-			return;
-		}
-		else if (controlStickPos.x >= 0.80)
-		{
-			if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).x <= 4)
-			{
-				if (player.getDirection() == Player::Direction::Left)
-				{
-					player.changeDirection();
-				}
-				player.setNextState(new ForwardSmashState());
-				return;
-			}
-		}
-		else if (controlStickPos.x <= -0.80)
-		{
-			if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).x <= 4)
-			{
-				if (player.getDirection() == Player::Direction::Right)
-				{
-					player.changeDirection();
-				}
-				player.setNextState(new ForwardSmashState());
-				return;
-			}
-		}
-		else if (controlStickPos.y <= -0.66)
-		{
-			if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).y <= 4)
-			{
-				player.setNextState(new UpSmashState());
-				return;
-			}
-		}
-		else if (controlStickPos.y >= 0.66)
-		{
-			if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).y <= 4)
-			{
-				player.setNextState(new DownSmashState());
-				return;
-			}
-		}
-		else if (controlStickPos.x >= abs(0.7*controlStickPos.y))
-		{
-			if (player.getDirection == Player::Direction::Right)
-			{
-				player.setNextState(new ForwardTiltState());
-				return;
-			}
-			else
-			{
-				player.setNextState(new JabState());
-				return;
-			}
-		}
-		else if (controlStickPos.x <= -abs(0.7*controlStickPos.y))
-		{
-			if (player.getDirection == Player::Direction::Left)
-			{
-				player.setNextState(new ForwardTiltState());
-				return;
-			}
-			else
-			{
-				player.setNextState(new JabState());
-				return;
-			}
-		}
-		else if (controlStickPos.y < 0)
-		{
-			player.setNextState(new UpTiltState());
-			return;
-		}
-		else if (controlStickPos.y > 0)
-		{
-			player.setNextState(new DownTiltState());
-			return;
-		}
-		else
-		{
-			player.setNextState(new JabState());
-			return;
-		}
-	}
-	// TODO: C-stick preeses
-	// L/R presses
-	else if (controller->buttonPressed(ButtonName::L) || controller->buttonPressed(ButtonName::R))
-	{
-		// TODO: Add analog shielding eventually
-		std::cout << "shield\n";
-		return;
-	}
-	// X/Y presses
-	else if (controller->buttonPressed(ButtonName::X) || controller->buttonPressed(ButtonName::Y))
-	{
-		player.setNextState(new JumpSquatState());
-		return;
-	}
-	// D-Pad presses
-	else if (controller->buttonPressed(ButtonName::D_PAD_UP))
-	{
-		player.setNextState(new TauntState());
-		return;
-	}
-	// Control Stick presses
-	else if (controlStickPos.y <= -0.66)
-	{
-		if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).y <= 4)
-		{
-			player.setNextState(new JumpSquatState());
-			return;
-		}
-	}
-	else if (controlStickPos.y >= 0.70)
-	{
-		player.setNextState(new SquatState());
-		return;
-	}
-	else if (controlStickPos.x >= 0.80)
-	{
-		if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).x <= 4)
-		{
-			if (player.getDirection() == Player::Direction::Right)
-			{
-				player.setState(new DashState());
-				return;
-			}
-			else
-			{
-				// Smash Turn
-				player.setState(new TurnState());
-				return;
-			}
-		}
-	}
-	else if (controlStickPos.x <= -0.80)
-	{
-		if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).x <= 4)
-		{
-			if (player.getDirection() == Player::Direction::Left)
-			{
-				player.setState(new DashState());
-				return;
-			}
-			else
-			{
-				// Smash Turn
-				player.setState(new TurnState());
-				return;
-			}
-		}
-	}
-	else if (controlStickPos.x > 0)
-	{
-		if (player.getDirection() == Player::Direction::Right)
-		{
-			std::cout << "walk.\n";
-			return;
-		}
-		else
-		{
-			// Smash Turn
-			player.setState(new TurnState());
-			return;
-		}
-	}
-	else if (controlStickPos.x < 0)
-	{
-		if (player.getDirection() == Player::Direction::Left)
-		{
-			std::cout << "walk.\n";
-			return;
-		}
-		else
-		{
-			// Smash Turn
-			player.setState(new TurnState());
-			return;
-		}
-	}
+	if (controller == nullptr) return;
+	// Hierarchy of button press priority: START > B > Z > A > C_STICK > L/R > X/Y > D_PAD
+	if (handleB(player, controller)) return;
+	if (handleZ(player, controller)) return;
+	if (handleA(player, controller)) return;
+	if (handleCStick(player, controller)) return;
+	if (handleLR(player, controller)) return;
+	if (handleXY(player, controller)) return;
+	if (handleDPad(player, controller)) return;
+	if (handleControlStick(player, controller)) return;
 }
 
 void IdleState::update(Player& player, Controller* controller)
@@ -315,4 +81,269 @@ void IdleState::animate(Player& player)
 void IdleState::destroy(Player& player)
 {
 	player.setOnScreenState("");
+}
+
+bool IdleState::handleA(Player& player, Controller* controller)
+{
+	if (controller->buttonPressed(ButtonName::A))
+	{
+		if (controller->buttonPressed(ButtonName::L) || controller->buttonPressed(ButtonName::R))
+		{
+			player.setNextState(new GrabState());
+			return true;
+		}
+		if (controller->getStickPosition(StickName::CONTROL_STICK).x >= 0.80)
+		{
+			if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).x <= 4)
+			{
+				if (player.getDirection() == Player::Direction::Left)
+				{
+					player.changeDirection();
+				}
+				player.setNextState(new ForwardSmashState());
+				return true;
+			}
+		}
+		if (controller->getStickPosition(StickName::CONTROL_STICK).x <= -0.80)
+		{
+			if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).x <= 4)
+			{
+				if (player.getDirection() == Player::Direction::Right)
+				{
+					player.changeDirection();
+				}
+				player.setNextState(new ForwardSmashState());
+				return true;
+			}
+		}
+		if (controller->getStickPosition(StickName::CONTROL_STICK).y <= -0.66)
+		{
+			if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).y <= 4)
+			{
+				player.setNextState(new UpSmashState());
+				return true;
+			}
+		}
+		if (controller->getStickPosition(StickName::CONTROL_STICK).y >= 0.66)
+		{
+			if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).y <= 4)
+			{
+				player.setNextState(new DownSmashState());
+				return true;
+			}
+		}
+		if (controller->getStickPosition(StickName::CONTROL_STICK).x >= 0.25)
+		{
+			if (controller->getStickAngle(StickName::CONTROL_STICK) >= 0 &&
+				controller->getStickAngle(StickName::CONTROL_STICK) <= 50 ||
+				controller->getStickAngle(StickName::CONTROL_STICK) >= 310 &&
+				controller->getStickAngle(StickName::CONTROL_STICK) <= 360)
+			{
+				if (player.getDirection == Player::Direction::Right)
+				{
+					player.setNextState(new ForwardTiltState());
+					return true;
+				}
+				else
+				{
+					player.setNextState(new JabState());
+					return true;
+				}
+			}
+		}
+		if (controller->getStickPosition(StickName::CONTROL_STICK).x <= -0.25)
+		{
+			if (controller->getStickAngle(StickName::CONTROL_STICK) >= 130 &&
+				controller->getStickAngle(StickName::CONTROL_STICK) <= 230)
+			{
+				if (player.getDirection == Player::Direction::Left)
+				{
+					player.setNextState(new ForwardTiltState());
+					return true;
+				}
+				else
+				{
+					player.setNextState(new JabState());
+					return true;
+				}
+			}
+		}
+		if (controller->getStickPosition(StickName::CONTROL_STICK).y <= -0.25)
+		{
+			player.setNextState(new UpTiltState());
+			return true;
+		}
+		if (controller->getStickPosition(StickName::CONTROL_STICK).y >= 0.25)
+		{
+			player.setNextState(new DownTiltState());
+			return true;
+		}
+		player.setNextState(new JabState());
+		return true;
+	}
+	return false;
+}
+
+bool IdleState::handleB(Player& player, Controller* controller)
+{
+	if (controller->buttonPressed(ButtonName::B))
+	{
+		if (controller->getStickPosition(StickName::CONTROL_STICK).x >= 0.60)
+		{
+			if (player.getDirection() == Player::Direction::Left)
+			{
+				player.changeDirection();
+			}
+			player.setNextState(new ForwardSpecialState());
+			return true;
+		}
+		if (controller->getStickPosition(StickName::CONTROL_STICK).x <= -0.60)
+		{
+			if (player.getDirection() == Player::Direction::Right)
+			{
+				player.changeDirection();
+			}
+			player.setNextState(new ForwardSpecialState());
+			return true;
+		}
+		if (controller->getStickPosition(StickName::CONTROL_STICK).y <= -0.55)
+		{
+			std::cout << "up b\n";
+			return true;
+		}
+		if (controller->getStickPosition(StickName::CONTROL_STICK).y >= 0.55)
+		{
+			std::cout << "down b\n";
+			return true;
+		}
+		std::cout << "neutral b\n";
+		return true;
+	}
+	return false;
+}
+
+bool IdleState::handleXY(Player& player, Controller* controller)
+{
+	if (controller->buttonPressed(ButtonName::X) || controller->buttonPressed(ButtonName::Y))
+	{
+		player.setNextState(new JumpSquatState());
+		return true;
+	}
+	return false;
+}
+
+bool IdleState::handleZ(Player& player, Controller* controller)
+{
+	if (controller->buttonPressed(ButtonName::Z))
+	{
+		player.setNextState(new GrabState());
+		return true;
+	}
+	return false;
+}
+
+bool IdleState::handleLR(Player& player, Controller* controller)
+{
+	if (controller->buttonPressed(ButtonName::L) || controller->buttonPressed(ButtonName::R))
+	{
+		// TODO: Add analog shielding eventually
+		std::cout << "shield\n";
+		return true;
+	}
+	return false;
+}
+
+bool IdleState::handleDPad(Player& player, Controller* controller)
+{
+	if (controller->buttonPressed(ButtonName::D_PAD_UP))
+	{
+		player.setNextState(new TauntState());
+		return true;
+	}
+	return false;
+}
+
+bool IdleState::handleCStick(Player& player, Controller* controller)
+{
+	return false;
+}
+
+bool IdleState::handleControlStick(Player& player, Controller* controller)
+{
+	if (controller->getStickPosition(StickName::CONTROL_STICK).y <= -0.66)
+	{
+		if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).y <= 4)
+		{
+			player.setNextState(new JumpSquatState());
+			return true;
+		}
+	}
+	if (controller->getStickPosition(StickName::CONTROL_STICK).y >= 0.70)
+	{
+		player.setNextState(new SquatState());
+		return true;
+	}
+	if (controller->getStickPosition(StickName::CONTROL_STICK).x >= 0.80)
+	{
+		if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).x <= 4)
+		{
+			if (player.getDirection() == Player::Direction::Right)
+			{
+				player.setState(new DashState());
+				return true;
+			}
+			else
+			{
+				// Smash Turn
+				player.setState(new TurnState());
+				return true;
+			}
+		}
+	}
+	if (controller->getStickPosition(StickName::CONTROL_STICK).x <= -0.80)
+	{
+		if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).x <= 4)
+		{
+			if (player.getDirection() == Player::Direction::Left)
+			{
+				player.setState(new DashState());
+				return true;
+			}
+			else
+			{
+				// Smash Turn
+				player.setState(new TurnState());
+				return true;
+			}
+		}
+	}
+	if (controller->getStickPosition(StickName::CONTROL_STICK).x >= 0.25)
+	{
+		if (player.getDirection() == Player::Direction::Right)
+		{
+			std::cout << "walk.\n";
+			return true;
+		}
+		else
+		{
+			// Smash Turn
+			player.setState(new TurnState());
+			return true;
+		}
+	}
+	if (controller->getStickPosition(StickName::CONTROL_STICK).x <= 0.25)
+	{
+		if (player.getDirection() == Player::Direction::Left)
+		{
+			std::cout << "walk.\n";
+			return true;
+		}
+		else
+		{
+			// Smash Turn
+			player.setState(new TurnState());
+			return true;
+		}
+	}
+	return false;
 }
