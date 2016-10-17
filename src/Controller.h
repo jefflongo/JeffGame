@@ -56,11 +56,11 @@ public:
 	sf::Vector2f getStickPosition(StickName name) const;
 	// Returns a value between 0 and 1
 	float getShoulderPosition(ShoulderName name) const;
+	// Returns the angle of the stick with values between 0 and 360
+	int getStickAngle(StickName name) const;
 	// Returns a 2d vector with frames since a cardinal direction change 
 	// for the x and y position of the stick
 	sf::Vector2u getFramesSinceDirectionChange(StickName name) const;
-	// Returns the angle of the stick with values between 0 and 360
-	int getStickAngle(StickName name) const;
 
 	// Returns true for a given button's initial press and sets it to held, else false
 	bool buttonPressed(ButtonName name);
@@ -92,8 +92,8 @@ private:
 
 	unsigned int controllerId_;
 	std::map<StickName, Stick> stickMap_;
-	std::map<ButtonName, Button> buttonMap_;
 	std::map<ShoulderName, Shoulder> shoulderMap_;
+	std::map<ButtonName, Button> buttonMap_;
 };
 
 #endif // CONTROLLER_H_
