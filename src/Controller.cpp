@@ -20,7 +20,7 @@ void Controller::mapStick(StickName name, Axis x, Axis y, float radius, float de
 	{
 		radius = 1;
 	}
-	stickMap_.at(name) = { x, y, abs(radius), deadzone, { 0, 0 }, CardinalDirections::None, CardinalDirections::None };
+	stickMap_[name] = { x, y, abs(radius), deadzone, { 0, 0 }, CardinalDirections::None, CardinalDirections::None };
 }
 
 void Controller::mapShoulder(ShoulderName name, Axis axis, float min, float max, float deadzone)
@@ -30,12 +30,12 @@ void Controller::mapShoulder(ShoulderName name, Axis axis, float min, float max,
 	{
 		min = max - 1;
 	}
-	shoulderMap_.at(name) = { axis, min, max, deadzone };
+	shoulderMap_[name] = { axis, min, max, deadzone };
 }
 
 void Controller::mapButton(ButtonName name, unsigned int id)
 {
-	buttonMap_.at(name) = { id, false };
+	buttonMap_[name] = { id, false };
 }
 
 sf::Vector2f Controller::getStickPosition(StickName name) const
@@ -68,7 +68,7 @@ float Controller::getShoulderPosition(ShoulderName name) const
 {
 	Shoulder shoulder = shoulderMap_.at(name);
 	float pos = (sf::Joystick::getAxisPosition(controllerId_, shoulder.axis) - shoulder.min) / (shoulder.max - shoulder.min);
-	if (pos < shoulder.deadzone)
+	if (pos <= shoulder.deadzone)
 	{
 		pos = 0;
 	}
@@ -79,11 +79,6 @@ float Controller::getShoulderPosition(ShoulderName name) const
 	return pos;
 }
 
-sf::Vector2u Controller::getFramesSinceDirectionChange(StickName name) const
-{
-	return stickMap_.at(name).framesSinceChange;
-}
-
 int Controller::getStickAngle(StickName name) const
 {
 	Stick stick = stickMap_.at(name);
@@ -92,6 +87,11 @@ int Controller::getStickAngle(StickName name) const
 	float angle = -atan2f(pos.y, pos.x) * 180 / static_cast<float>(M_PI);
 	// Add 0.5 to fix rounding truncation and add 360 followed by modulo 360 to always get a positive angle
 	return static_cast<int>(angle + 0.5 + 360) % 360;
+}
+
+sf::Vector2u Controller::getFramesSinceDirectionChange(StickName name) const
+{
+	return stickMap_.at(name).framesSinceChange;
 }
 
 bool Controller::buttonPressed(ButtonName name)
@@ -115,7 +115,7 @@ void Controller::checkStickDirections()
 	{
 		sf::Vector2f pos = getStickPosition(i.first);
 		// Update the state of the x-axis
-		if (pos.x < -0.25)
+		if (pos.x <= -0.25)
 		{
 			if (i.second.horizontalDir != CardinalDirections::Left)
 			{
@@ -127,7 +127,7 @@ void Controller::checkStickDirections()
 				i.second.framesSinceChange.x++;
 			}
 		}
-		else if (pos.x > 0.25)
+		else if (pos.x >= 0.25)
 		{
 			if (i.second.horizontalDir != CardinalDirections::Right)
 			{
@@ -141,11 +141,18 @@ void Controller::checkStickDirections()
 		}
 		else
 		{
-			i.second.horizontalDir = CardinalDirections::None;
-			i.second.framesSinceChange.x = 0;
+			if (i.second.horizontalDir != CardinalDirections::None)
+			{
+				i.second.horizontalDir = CardinalDirections::None;
+				i.second.framesSinceChange.x = 0;
+			}
+			else
+			{
+				i.second.framesSinceChange.x++;
+			}
 		}
 		// Update the state of the y-axis
-		if (pos.y < -0.25)
+		if (pos.y <= -0.25)
 		{
 			if (i.second.verticalDir != CardinalDirections::Up)
 			{
@@ -157,7 +164,7 @@ void Controller::checkStickDirections()
 				i.second.framesSinceChange.y++;
 			}
 		}
-		else if (pos.y > 0.25)
+		else if (pos.y >= 0.25)
 		{
 			if (i.second.verticalDir != CardinalDirections::Down)
 			{
@@ -171,8 +178,15 @@ void Controller::checkStickDirections()
 		}
 		else
 		{
-			i.second.verticalDir = CardinalDirections::None;
-			i.second.framesSinceChange.y = 0;
+			if (i.second.verticalDir != CardinalDirections::None)
+			{
+				i.second.verticalDir = CardinalDirections::None;
+				i.second.framesSinceChange.y = 0;
+			}
+			else
+			{
+				i.second.framesSinceChange.y++;
+			}
 		}
 	}
 }
