@@ -2,13 +2,11 @@
 
 #include <iostream>
 #include "SFML/Graphics.hpp"
-#include "../Globals.h"
 #include "../Player.h"
 #include "../Controller.h"
 
-#include "IdleState.h"
 #include "JumpSquatState.h"
-#include "CrouchState.h"
+#include "SquatState.h"
 #include "RunState.h"
 
 void TurnRunState::init(Player& player)
@@ -19,59 +17,19 @@ void TurnRunState::init(Player& player)
 
 void TurnRunState::handleInput(Player& player, Controller* controller)
 {
-	if (controller == nullptr)
-	{
-		return;
-	}
-
-	// X/Y presses
-	if (controller->buttonPressed(ButtonName::X) ||
-		controller->buttonPressed(ButtonName::Y))
-	{
-		player.setNextState(new JumpSquatState());
-		return;
-	}
-	// Control Stick presses
-	else if (controller->axisPercentageLessThan(Axis::Y, -70))
-	{
-		if (controller->getControlStickAngle() > 42 && controller->getControlStickAngle() < 138)
-		{
-			player.setNextState(new JumpSquatState());
-			return;
-		}
-	}
-	// TODO: This number is lower than 30 if Run Brake is entered
-	else if (controller->axisPercentageGreaterThan(Axis::Y, 20))
-	{
-		if (animFrame_ >= 30)
-		{
-			player.setNextState(new CrouchState());
-			return;
-		}
-	}
-	else if (controller->axisPercentageLessThan(Axis::X, -75) && player.getDirection() == Player::Direction::Left ||
-		controller->axisPercentageGreaterThan(Axis::X, 75) && player.getDirection() == Player::Direction::Right)
-	{
-		if (animFrame_ >= 30)
-		{
-			player.setNextState(new RunState());
-			return;
-		}
-	}
-	else
-	{
-		if (animFrame_ >= 30)
-		{
-			player.setNextState(new IdleState());
-			return;
-		}
-	}
+	if (controller == nullptr) return;
+	if (IdleState::handleXY(player, controller)) return;
+	if (handleControlStick(player, controller)) return;
 }
 
 void TurnRunState::update(Player& player, Controller* controller)
 {
 	player.decelOnGround();
-	if (animFrame_ == 18)
+	if (animFrame_ >= 30)
+	{
+		player.setNextState(new IdleState());
+	}
+	else if (animFrame_ == 18)
 	{
 		player.changeDirection();
 	}
@@ -97,4 +55,34 @@ void TurnRunState::animate(Player& player)
 void TurnRunState::destroy(Player& player)
 {
 	player.setOnScreenState("");
+}
+
+bool TurnRunState::handleControlStick(Player& player, Controller* controller)
+{
+	if (controller->getStickPosition(StickName::CONTROL_STICK).y <= -0.66)
+	{
+		if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).y <= 4)
+		{
+			player.setNextState(new JumpSquatState());
+			return true;
+		}
+	}
+	// TODO: This number is lower than 30 if Run Brake is entered
+	if (controller->getStickPosition(StickName::CONTROL_STICK).y >= 0.70)
+	{
+		player.setNextState(new SquatState());
+		return true;
+	}
+	if (controller->getStickPosition(StickName::CONTROL_STICK).x <= -0.80 &&
+		player.getDirection() == Player::Direction::Left ||
+		controller->getStickPosition(StickName::CONTROL_STICK).x >= 0.80 && 
+		player.getDirection() == Player::Direction::Right)
+	{
+		if (animFrame_ >= 30)
+		{
+			player.setNextState(new RunState());
+			return true;
+		}
+	}
+	return false;
 }

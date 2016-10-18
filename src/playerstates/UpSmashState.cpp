@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include "SFML/Graphics.hpp"
-#include "../Globals.h"
 #include "../Player.h"
 #include "../Controller.h"
 
@@ -16,10 +15,7 @@ void UpSmashState::init(Player& player)
 
 void UpSmashState::handleInput(Player& player, Controller* controller)
 {
-	if (controller == nullptr)
-	{
-		return;
-	}
+	if (controller == nullptr) return;
 }
 
 void UpSmashState::update(Player& player, Controller* controller)

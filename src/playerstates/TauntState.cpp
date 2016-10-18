@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include "SFML/Graphics.hpp"
-#include "../Globals.h"
 #include "../Player.h"
 #include "../Controller.h"
 
@@ -16,10 +15,7 @@ void TauntState::init(Player& player)
 
 void TauntState::handleInput(Player& player, Controller* controller)
 {
-	if (controller == nullptr)
-	{
-		return;
-	}
+	if (controller == nullptr) return;
 }
 
 void TauntState::update(Player& player, Controller* controller)

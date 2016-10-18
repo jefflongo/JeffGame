@@ -139,7 +139,7 @@ bool IdleState::handleA(Player& player, Controller* controller)
 				controller->getStickAngle(StickName::CONTROL_STICK) >= 310 &&
 				controller->getStickAngle(StickName::CONTROL_STICK) <= 360)
 			{
-				if (player.getDirection == Player::Direction::Right)
+				if (player.getDirection() == Player::Direction::Right)
 				{
 					player.setNextState(new ForwardTiltState());
 					return true;
@@ -156,7 +156,7 @@ bool IdleState::handleA(Player& player, Controller* controller)
 			if (controller->getStickAngle(StickName::CONTROL_STICK) >= 130 &&
 				controller->getStickAngle(StickName::CONTROL_STICK) <= 230)
 			{
-				if (player.getDirection == Player::Direction::Left)
+				if (player.getDirection() == Player::Direction::Left)
 				{
 					player.setNextState(new ForwardTiltState());
 					return true;
@@ -289,13 +289,13 @@ bool IdleState::handleControlStick(Player& player, Controller* controller)
 		{
 			if (player.getDirection() == Player::Direction::Right)
 			{
-				player.setState(new DashState());
+				player.setNextState(new DashState());
 				return true;
 			}
 			else
 			{
 				// Smash Turn
-				player.setState(new TurnState());
+				player.setNextState(new TurnState());
 				return true;
 			}
 		}
@@ -306,13 +306,13 @@ bool IdleState::handleControlStick(Player& player, Controller* controller)
 		{
 			if (player.getDirection() == Player::Direction::Left)
 			{
-				player.setState(new DashState());
+				player.setNextState(new DashState());
 				return true;
 			}
 			else
 			{
 				// Smash Turn
-				player.setState(new TurnState());
+				player.setNextState(new TurnState());
 				return true;
 			}
 		}
@@ -327,11 +327,11 @@ bool IdleState::handleControlStick(Player& player, Controller* controller)
 		else
 		{
 			// Smash Turn
-			player.setState(new TurnState());
+			player.setNextState(new TurnState());
 			return true;
 		}
 	}
-	if (controller->getStickPosition(StickName::CONTROL_STICK).x <= 0.25)
+	if (controller->getStickPosition(StickName::CONTROL_STICK).x <= -0.25)
 	{
 		if (player.getDirection() == Player::Direction::Left)
 		{
@@ -341,7 +341,7 @@ bool IdleState::handleControlStick(Player& player, Controller* controller)
 		else
 		{
 			// Smash Turn
-			player.setState(new TurnState());
+			player.setNextState(new TurnState());
 			return true;
 		}
 	}

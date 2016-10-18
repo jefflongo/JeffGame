@@ -125,7 +125,7 @@ void SplashScreen::pollForStart(Game& game)
 std::vector<unsigned int> SplashScreen::getConnectedDevices()
 {
 	std::vector<unsigned int> connectedDevices;
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 9; i++)
 	{
 		if (sf::Joystick::isConnected(i))
 		{

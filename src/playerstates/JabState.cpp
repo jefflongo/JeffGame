@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include "SFML/Graphics.hpp"
-#include "../Globals.h"
 #include "../Player.h"
 #include "../Controller.h"
 
@@ -14,11 +13,7 @@ void JabState::init(Player& player)
 
 void JabState::handleInput(Player& player, Controller* controller)
 {
-	if (controller == nullptr)
-	{
-		return;
-	}
-
+	if (controller == nullptr) return;
 	if (animFrame_ >= 16)
 	{
 		IdleState::handleInput(player, controller);

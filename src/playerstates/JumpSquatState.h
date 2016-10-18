@@ -15,6 +15,7 @@ public:
 	void animate(Player& player);
 	void destroy(Player& player);
 private:
+	bool handleA(Player& player, Controller* controller);
 };
 
 #endif // JUMPSQUAT_STATE_H_

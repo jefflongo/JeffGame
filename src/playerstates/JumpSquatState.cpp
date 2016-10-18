@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include "SFML/Graphics.hpp"
-#include "../Globals.h"
 #include "../Player.h"
 #include "../Controller.h"
 
@@ -18,22 +17,8 @@ void JumpSquatState::init(Player& player)
 
 void JumpSquatState::handleInput(Player& player, Controller* controller)
 {
-	if (controller == nullptr)
-	{
-		return;
-	}
-
-	if (controller->buttonPressed(ButtonName::A))
-	{
-		if (controller->axisPercentageLessThan(Axis::Y, -70))
-		{
-			if (controller->getControlStickAngle() > 42 && controller->getControlStickAngle() < 138)
-			{
-				player.setNextState(new UpSmashState());
-				return;
-			}
-		}
-	}
+	if (controller == nullptr) return;
+	if (handleA(player, controller)) return;
 }
 
 void JumpSquatState::update(Player& player, Controller* controller)
@@ -57,4 +42,20 @@ void JumpSquatState::animate(Player& player)
 void JumpSquatState::destroy(Player& player)
 {
 	player.setOnScreenState("");
+}
+
+bool JumpSquatState::handleA(Player& player, Controller* controller)
+{
+	if (controller->buttonPressed(ButtonName::A))
+	{
+		if (controller->getStickPosition(StickName::CONTROL_STICK).y <= -0.66)
+		{
+			if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).y <= 4)
+			{
+				player.setNextState(new UpSmashState());
+				return true;
+			}
+		}
+	}
+	return false;
 }

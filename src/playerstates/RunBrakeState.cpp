@@ -2,13 +2,12 @@
 
 #include <iostream>
 #include "SFML/Graphics.hpp"
-#include "../Globals.h"
 #include "../Player.h"
 #include "../Controller.h"
 
 #include "IdleState.h"
 #include "JumpSquatState.h"
-#include "CrouchState.h"
+#include "SquatState.h"
 #include "TurnRunState.h"
 
 void RunBrakeState::init(Player& player)
@@ -19,38 +18,9 @@ void RunBrakeState::init(Player& player)
 
 void RunBrakeState::handleInput(Player& player, Controller* controller)
 {
-	if (controller == nullptr)
-	{
-		return;
-	}
-
-	// X/Y presses
-	if (controller->buttonPressed(ButtonName::X) ||
-		controller->buttonPressed(ButtonName::Y))
-	{
-		player.setNextState(new JumpSquatState());
-		return;
-	}
-	// Control Stick presses
-	else if (controller->axisPercentageLessThan(Axis::Y, -70))
-	{
-		if (controller->getControlStickAngle() > 42 && controller->getControlStickAngle() < 138)
-		{
-			player.setNextState(new JumpSquatState());
-			return;
-		}
-	}
-	else if (controller->axisPercentageGreaterThan(Axis::Y, 20))
-	{
-		player.setNextState(new CrouchState());
-		return;
-	}
-	else if (controller->axisPercentageLessThan(Axis::X, -20) && player.getDirection() == Player::Direction::Right ||
-		controller->axisPercentageGreaterThan(Axis::X, 20) && player.getDirection() == Player::Direction::Left)
-	{
-		player.setNextState(new TurnRunState());
-		return;
-	}
+	if (controller == nullptr) return;
+	if (IdleState::handleXY(player, controller)) return;
+	if (handleControlStick(player, controller)) return;
 }
 
 void RunBrakeState::update(Player& player, Controller* controller)
@@ -71,4 +41,30 @@ void RunBrakeState::animate(Player& player)
 void RunBrakeState::destroy(Player& player)
 {
 	player.setOnScreenState("");
+}
+
+bool RunBrakeState::handleControlStick(Player& player, Controller* controller)
+{
+	if (controller->getStickPosition(StickName::CONTROL_STICK).y <= -0.66)
+	{
+		if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).y <= 4)
+		{
+			player.setNextState(new JumpSquatState());
+			return true;
+		}
+	}
+	if (controller->getStickPosition(StickName::CONTROL_STICK).y >= 0.70)
+	{
+		player.setNextState(new SquatState());
+		return true;
+	}
+	if (controller->getStickPosition(StickName::CONTROL_STICK).x <= -0.25 &&
+		player.getDirection() == Player::Direction::Right ||
+		controller->getStickPosition(StickName::CONTROL_STICK).x >= 0.25 && 
+		player.getDirection() == Player::Direction::Left)
+	{
+		player.setNextState(new TurnRunState());
+		return true;
+	}
+	return false;
 }

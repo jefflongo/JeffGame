@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include "SFML/Graphics.hpp"
-#include "../Globals.h"
 #include "../Player.h"
 #include "../Controller.h"
 
@@ -14,24 +13,8 @@ void DashAttackState::init(Player& player)
 
 void DashAttackState::handleInput(Player& player, Controller* controller)
 {
-	if (controller == nullptr)
-	{
-		return;
-	}
-
-	// test
-	if (animFrame_ >= 4 && animFrame_ <= 20)
-	{
-		if (player.getDirection() == Player::Direction::Right)
-		{
-			player.setPos(player.getPos().x + 10, player.getPos().y);
-		}
-		else
-		{
-			player.setPos(player.getPos().x - 10, player.getPos().y);
-		}
-	}
-	else if (animFrame_ >= 23)
+	if (controller == nullptr) return;
+	if (animFrame_ >= 23 && animFrame_ < 39)
 	{
 		IdleState::handleInput(player, controller);
 	}
@@ -43,6 +26,18 @@ void DashAttackState::update(Player& player, Controller* controller)
 	if (animFrame_ >= 39)
 	{
 		player.setNextState(new IdleState());
+	}
+	// test
+	if (animFrame_ >= 4 && animFrame_ <= 20)
+	{
+		if (player.getDirection() == Player::Direction::Right)
+		{
+			player.setPos(player.getPos().x + 10, player.getPos().y);
+		}
+		else
+		{
+			player.setPos(player.getPos().x - 10, player.getPos().y);
+		}
 	}
 }
 

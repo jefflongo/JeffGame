@@ -1,12 +1,12 @@
 #ifndef RUN_BRAKE_STATE_H_
 #define RUN_BRAKE_STATE_H_
 
-#include "../PlayerState.h"
+#include "IdleState.h"
 
 class Player;
 class Controller;
 
-class RunBrakeState : public PlayerState
+class RunBrakeState : public IdleState
 {
 public:
 	void init(Player& player);
@@ -15,6 +15,7 @@ public:
 	void animate(Player& player);
 	void destroy(Player& player);
 private:
+	bool handleControlStick(Player& player, Controller* controller);
 };
 
 #endif // RUN_BRAKE_STATE_H_
