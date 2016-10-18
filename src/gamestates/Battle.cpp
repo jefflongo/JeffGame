@@ -18,7 +18,7 @@ void Battle::init()
 
 void Battle::update(Game& game)
 {
-	debugMode_ = game.getDebugMode();
+	debugMode_ = game.getDebugState();
 	player_.update(stage_);
 }
 

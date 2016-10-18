@@ -16,22 +16,8 @@ void TurnState::init(Player& player)
 
 void TurnState::handleInput(Player& player, Controller* controller)
 {
-	if (controller == nullptr)
-	{
-		return;
-	}
-
-	if (controller->axisPercentageGreaterThan(Axis::X, 75) && player.getDirection() == Player::Direction::Right ||
-		controller->axisPercentageLessThan(Axis::X, -75) && player.getDirection() == Player::Direction::Left)
-	{
-		player.setNextState(new DashState());
-		return;
-	}
-	else
-	{
-		player.setNextState(new IdleState());
-		return;
-	}
+	if (controller == nullptr) return;
+	if (handleControlStick(player, controller)) return;
 }
 
 void TurnState::update(Player& player, Controller* controller)
@@ -49,4 +35,32 @@ void TurnState::animate(Player& player)
 void TurnState::destroy(Player& player)
 {
 	player.setOnScreenState("");
+}
+
+bool TurnState::handleControlStick(Player& player, Controller* controller)
+{
+	if (controller->getStickPosition(StickName::CONTROL_STICK).x >= 0.80)
+	{
+		if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).x <= 4)
+		{
+			if (player.getDirection() == Player::Direction::Right)
+			{
+				player.setNextState(new DashState());
+				return true;
+			}
+		}
+	}
+	if (controller->getStickPosition(StickName::CONTROL_STICK).x <= -0.80)
+	{
+		if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).x <= 4)
+		{
+			if (player.getDirection() == Player::Direction::Left)
+			{
+				player.setNextState(new DashState());
+				return true;
+			}
+		}
+	}
+	player.setNextState(new IdleState());
+	return true;
 }

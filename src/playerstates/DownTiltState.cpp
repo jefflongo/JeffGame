@@ -15,12 +15,8 @@ void DownTiltState::init(Player& player)
 
 void DownTiltState::handleInput(Player& player, Controller* controller)
 {
-	if (controller == nullptr)
-	{
-		return;
-	}
-
-	if (animFrame_ >= 28)
+	if (controller == nullptr) return;
+	if (animFrame_ >= 28 && animFrame_ < 29)
 	{
 		IdleState::handleInput(player, controller);
 	}
@@ -31,14 +27,7 @@ void DownTiltState::update(Player& player, Controller* controller)
 	player.decelOnGround();
 	if (animFrame_ >= 29)
 	{
-		if (controller->axisPercentageGreaterThan(Axis::Y, 20))
-		{
-			player.setNextState(new CrouchState());
-		}
-		else
-		{
-			player.setNextState(new IdleState());
-		}
+		if (handleControlStick(player, controller)) return;
 	}
 }
 
@@ -70,4 +59,15 @@ void DownTiltState::animate(Player& player)
 void DownTiltState::destroy(Player& player)
 {
 	player.setOnScreenState("");
+}
+
+bool DownTiltState::handleControlStick(Player& player, Controller* controller)
+{
+	if (controller->getStickPosition(StickName::CONTROL_STICK).y > 0.25)
+	{
+		player.setNextState(new CrouchState());
+		return true;
+	}
+	player.setNextState(new IdleState());
+	return true;
 }

@@ -15,10 +15,7 @@ void GrabState::init(Player& player)
 
 void GrabState::handleInput(Player& player, Controller* controller)
 {
-	if (controller == nullptr)
-	{
-		return;
-	}
+	if (controller == nullptr) return;
 }
 
 void GrabState::update(Player& player, Controller* controller)

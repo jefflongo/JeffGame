@@ -13,11 +13,7 @@ void UpTiltState::init(Player& player)
 
 void UpTiltState::handleInput(Player& player, Controller* controller)
 {
-	if (controller == nullptr)
-	{
-		return;
-	}
-
+	if (controller == nullptr) return;
 	if (animFrame_ >= 23)
 	{
 		IdleState::handleInput(player, controller);

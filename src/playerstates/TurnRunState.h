@@ -1,12 +1,12 @@
 #ifndef TURN_RUN_STATE_H_
 #define TURN_RUN_STATE_H_
 
-#include "../PlayerState.h"
+#include "IdleState.h"
 
 class Player;
 class Controller;
 
-class TurnRunState : public PlayerState
+class TurnRunState : public IdleState
 {
 public:
 	void init(Player& player);
@@ -15,6 +15,7 @@ public:
 	void animate(Player& player);
 	void destroy(Player& player);
 private:
+	bool handleControlStick(Player& player, Controller* controller);
 };
 
 #endif // TURN_RUN_STATE_H_

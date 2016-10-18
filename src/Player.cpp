@@ -178,6 +178,26 @@ void Player::setOnScreenState(std::string text)
 	playerstateText_.setString(text);
 }
 
+sf::Vector2f Player::getPos() const 
+{
+	return pos_;
+}
+
+sf::Vector2f Player::getVelo() const 
+{ 
+	return velo_; 
+}
+
+Player::Direction Player::getDirection() const 
+{
+	return direction_; 
+}
+
+bool Player::isOnGround() const 
+{ 
+	return onGround_; 
+}
+
 void Player::changeDirection()
 {
 	if (onGround_)
@@ -211,21 +231,7 @@ void Player::fastFall()
 
 void Player::move()
 {
-	float analogInfluence = controller_->getAxisPosition(sf::Joystick::Axis::X) / controller_->getControls()->controlStick.radius;
-
-	if (analogInfluence > 1)
-	{
-		analogInfluence = 1;
-	}
-	else if (analogInfluence < -1)
-	{
-		analogInfluence = -1;
-	}
-	else if (analogInfluence > -0.05 && analogInfluence < 0.05)
-	{
-		analogInfluence = 0;
-	}
-
+	float analogInfluence = controller_->getStickPosition(StickName::CONTROL_STICK).x;
 	if (onGround_)
 	{
 		velo_.x += ACCEL*analogInfluence;

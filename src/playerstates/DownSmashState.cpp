@@ -13,12 +13,8 @@ void DownSmashState::init(Player& player)
 
 void DownSmashState::handleInput(Player& player, Controller* controller)
 {
-	if (controller == nullptr)
-	{
-		return;
-	}
-
-	if (animFrame_ >= 46)
+	if (controller == nullptr) return;
+	if (animFrame_ >= 46 && animFrame_ < 49)
 	{
 		IdleState::handleInput(player, controller);
 	}

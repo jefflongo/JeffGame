@@ -3,6 +3,7 @@
 
 #define _USE_MATH_DEFINES
 
+#include <map>
 #include <math.h>
 #include "SFML/Graphics.hpp"
 
@@ -28,22 +29,55 @@ Button 10  - D-pad down
 Button 11  - D-pad right
 */
 
+enum class StickName { CONTROL_STICK, C_STICK };
+enum class ShoulderName { L, R };
+enum class ButtonName { A, B, X, Y, Z, R, L, START, D_PAD_UP, D_PAD_LEFT, D_PAD_DOWN, D_PAD_RIGHT };
+enum class CardinalDirections { Up, Down, Left, Right, None };
+
 class Controller
 {
 public:
 	typedef sf::Joystick::Axis Axis;
 
-	enum class CardinalDirections { Up, Down, Left, Right, None };
+	Controller();
+	Controller(unsigned int controllerId);
 
-	// Always initialize framesSinceChange members as 0 and CardinalDirections as None
+	// Updates the sticks' cardinal directions and the state of the buttons
+	void update();
 
-	// Assign axes to the stick?
+	// Map an x-axis, y-axis, and radius to a stick
+	void mapStick(StickName name, Axis x, Axis y, float radius, float deadzone);
+	// Map an axis and range for a shoulder
+	void mapShoulder(ShoulderName name, Axis axis, float min, float max, float deadzone);
+	// Map an id to a button
+	void mapButton(ButtonName name, unsigned int id);
+
+	// Returns a 2d vector with values between -1 and 1
+	sf::Vector2f getStickPosition(StickName name) const;
+	// Returns a value between 0 and 1
+	float getShoulderPosition(ShoulderName name) const;
+	// Returns the angle of the stick with values between 0 and 360
+	int getStickAngle(StickName name) const;
+	// Returns a 2d vector with frames since a cardinal direction change 
+	// for the x and y position of the stick
+	sf::Vector2u getFramesSinceDirectionChange(StickName name) const;
+
+	// Returns true for a given button's initial press and sets it to held, else false
+	bool buttonPressed(ButtonName name);
+
+private:
 	struct Stick
 	{
-		//Axis horizontal, vertical;
-		float radius;
-		int framesSinceHorizontalChange, framesSinceVerticalChange;
+		Axis x, y;
+		float radius, deadzone;
+		sf::Vector2u framesSinceChange;
 		CardinalDirections horizontalDir, verticalDir;
+	};
+
+	struct Shoulder
+	{
+		Axis axis;
+		float min, max, deadzone;
 	};
 
 	struct Button
@@ -53,36 +87,13 @@ public:
 		//unsigned int framesHeld;
 	};
 
-	// Make these all Controller members initialized by constructor.  Controller methods for each button
-	struct Controls
-	{
-		Stick controlStick, cStick;
-		float SHOULDER_MIN, SHOULDER_MAX;
-		Button A, B, X, Y, Z, R, L, START, D_PAD_UP, D_PAD_LEFT, D_PAD_DOWN, D_PAD_RIGHT;
-	};
-
-	Controller();
-	Controller(unsigned int controllerId, Controls controls);
-
-	void update();
-
-	Controls* getControls(); // hopefully find a way to get rid of this
-	float getAxisPosition(Axis axis) const;
-	int getControlStickAngle() const;
-
-	bool buttonPressed(Button& button);
-	bool axisPercentageGreaterThan(Axis axis, float percent);
-	bool axisPercentageLessThan(Axis axis, float percent);
-	bool axisPercentageBetween(Axis axis, float percentOne, float percentTwo);
-	bool controlStickAngleBetween(int angleOne, int angleTwo);
-	bool cardinalDirectionChange(Axis axis, int frames);
-
-private:
-	void checkHeldButtons();
 	void checkStickDirections();
+	void checkHeldButtons();
 
-	Controls controls_;
 	unsigned int controllerId_;
+	std::map<StickName, Stick> stickMap_;
+	std::map<ShoulderName, Shoulder> shoulderMap_;
+	std::map<ButtonName, Button> buttonMap_;
 };
 
 #endif // CONTROLLER_H_

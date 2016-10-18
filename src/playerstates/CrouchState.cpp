@@ -28,206 +28,16 @@ void CrouchState::init(Player& player)
 
 void CrouchState::handleInput(Player& player, Controller* controller)
 {
-	if (controller == nullptr)
-	{
-		return;
-	}
-
-	// L/R presses
-	if (controller->buttonPressed(controller->getControls()->L) ||
-		controller->buttonPressed(controller->getControls()->R))
-	{
-		std::cout << "shield\n";
-		return;
-	}
-	// B presses
-	else if (controller->buttonPressed(controller->getControls()->B))
-	{
-		if (controller->axisPercentageLessThan(Axis::Y, -50) &&
-			controller->axisPercentageLessThan(Axis::X, 50) &&
-			controller->axisPercentageGreaterThan(Axis::X, -50) ||
-			controller->axisPercentageLessThan(Axis::Y, -50) &&
-			controller->getControlStickAngle() > 53 && controller->getControlStickAngle() < 127)
-		{
-			std::cout << "up b\n";
-			return;
-		}
-		else if (controller->axisPercentageGreaterThan(Axis::Y, 50) &&
-			controller->axisPercentageLessThan(Axis::X, 50) &&
-			controller->axisPercentageGreaterThan(Axis::X, -50) ||
-			controller->axisPercentageGreaterThan(Axis::Y, 50) &&
-			controller->getControlStickAngle() > 233 && controller->getControlStickAngle() < 307)
-		{
-			std::cout << "down b\n";
-			return;
-		}
-		else if (controller->axisPercentageGreaterThan(Axis::X, 50))
-		{
-			if (controller->getControlStickAngle() >= 0 && controller->getControlStickAngle() < 54 || controller->getControlStickAngle() > 306 && controller->getControlStickAngle() < 360)
-			{
-				if (player.getDirection() == Player::Direction::Left)
-				{
-					player.changeDirection();
-				}
-				player.setNextState(new ForwardSpecialState());
-				return;
-			}
-		}
-		else if (controller->axisPercentageLessThan(Axis::X, -50))
-		{
-			if (controller->getControlStickAngle() > 126 && controller->getControlStickAngle() < 234)
-			{
-				if (player.getDirection() == Player::Direction::Right)
-				{
-					player.changeDirection();
-				}
-				player.setNextState(new ForwardSpecialState());
-				return;
-			}
-		}
-		else
-		{
-			std::cout << "neutral b\n";
-			return;
-		}
-	}
-	// A presses
-	else if (controller->buttonPressed(controller->getControls()->A))
-	{
-		if (controller->axisPercentageLessThan(Axis::Y, -70))
-		{
-			if (controller->getControlStickAngle() > 42 && controller->getControlStickAngle() < 138)
-			{
-				player.setNextState(new UpSmashState());
-				return;
-			}
-		}
-		else if (controller->axisPercentageGreaterThan(Axis::Y, 70))
-		{
-			if (controller->getControlStickAngle() > 222 && controller->getControlStickAngle() < 318)
-			{
-				player.setNextState(new DownSmashState());
-				return;
-			}
-		}
-		else if (controller->axisPercentageGreaterThan(Axis::X, 75))
-		{
-			if (controller->getControlStickAngle() >= 0 && controller->getControlStickAngle() < 38 || controller->getControlStickAngle() > 322 && controller->getControlStickAngle() < 360)
-			{
-				if (player.getDirection() == Player::Direction::Left)
-				{
-					player.changeDirection();
-				}
-				player.setNextState(new ForwardSmashState());
-				return;
-			}
-		}
-		else if (controller->axisPercentageLessThan(Axis::X, -75))
-		{
-			if (controller->getControlStickAngle() > 142 && controller->getControlStickAngle() < 218)
-			{
-				if (player.getDirection() == Player::Direction::Right)
-				{
-					player.changeDirection();
-				}
-				player.setNextState(new ForwardSmashState());
-				return;
-			}
-		}
-		else if (controller->axisPercentageLessThan(Axis::Y, -20) && controller->axisPercentageGreaterThan(Axis::Y, -70))
-		{
-			if (controller->getControlStickAngle() > 50 && controller->getControlStickAngle() < 130)
-			{
-				player.setNextState(new UpTiltState());
-				return;
-			}
-		}
-		else if (controller->axisPercentageGreaterThan(Axis::Y, 20) && controller->axisPercentageLessThan(Axis::Y, 70))
-		{
-			if (controller->getControlStickAngle() > 230 && controller->getControlStickAngle() < 310)
-			{
-				player.setNextState(new DownTiltState());
-				return;
-			}
-		}
-		// if none of the above cases, try these
-		if (controller->axisPercentageGreaterThan(Axis::X, 20) && player.getDirection() == Player::Direction::Right ||
-			controller->axisPercentageLessThan(Axis::X, -20) && player.getDirection() == Player::Direction::Left)
-		{
-			player.setNextState(new ForwardTiltState());
-			return;
-		}
-		else
-		{
-			player.setNextState(new JabState());
-			return;
-		}
-	}
-	// X/Y presses
-	else if (controller->buttonPressed(controller->getControls()->X) ||
-		controller->buttonPressed(controller->getControls()->Y))
-	{
-		player.setNextState(new JumpSquatState());
-		return;
-	}
-	// Z presses
-	else if (controller->buttonPressed(controller->getControls()->Z))
-	{
-		player.setNextState(new GrabState());
-		return;
-	}
-	// D-Pad presses
-	else if (controller->buttonPressed(controller->getControls()->D_PAD_UP))
-	{
-		player.setNextState(new TauntState());
-		return;
-	}
-	// Control Stick presses
-	else if (controller->axisPercentageLessThan(Axis::Y, -70))
-	{
-		if (controller->getControlStickAngle() > 42 && controller->getControlStickAngle() < 138)
-		{
-			player.setNextState(new JumpSquatState());
-			return;
-		}
-	}
-	else if (controller->axisPercentageGreaterThan(Axis::X, 75))
-	{
-		if (controller->getControlStickAngle() >= 0 && controller->getControlStickAngle() < 38 || controller->getControlStickAngle() > 322 && controller->getControlStickAngle() < 360)
-		{
-			if (player.getDirection() == Player::Direction::Right)
-			{
-				player.setState(new DashState());
-				return;
-			}
-		}
-	}
-	else if (controller->axisPercentageLessThan(Axis::X, -75))
-	{
-		if (controller->getControlStickAngle() > 142 && controller->getControlStickAngle() < 218)
-		{
-			if (player.getDirection() == Player::Direction::Left)
-			{
-				player.setState(new DashState());
-				return;
-			}
-		}
-	}
-	// if none of the above cases, try this
-	if (controller->axisPercentageGreaterThan(Axis::X, 20) && player.getDirection() == Player::Direction::Left ||
-		controller->axisPercentageLessThan(Axis::X, -20) && player.getDirection() == Player::Direction::Right)
-	{
-		if (controller->axisPercentageLessThan(Axis::Y, 75))
-		{
-			player.setNextState(new TurnState());
-			return;
-		}
-	}
-	else if (controller->axisPercentageLessThan(Axis::Y, 20))
-	{
-		player.setNextState(new UnsquatState());
-		return;
-	}
+	// no side b, z does dtilt, and some delay to stand before any move <-- TODO: IMPLEMENT
+	if (controller == nullptr) return;
+	if (handleB(player, controller)) return;
+	if (handleZ(player, controller)) return;
+	if (IdleState::handleA(player, controller)) return;
+	if (IdleState::handleCStick(player, controller)) return;
+	if (IdleState::handleLR(player, controller)) return;
+	if (IdleState::handleXY(player, controller)) return;
+	if (IdleState::handleDPad(player, controller)) return;
+	if (handleControlStick(player, controller)) return;
 }
 
 void CrouchState::update(Player& player, Controller* controller)
@@ -263,4 +73,112 @@ void CrouchState::animate(Player& player)
 void CrouchState::destroy(Player& player)
 {
 	player.setOnScreenState("");
+}
+
+bool CrouchState::handleB(Player& player, Controller* controller)
+{
+	if (controller->buttonPressed(ButtonName::B))
+	{
+		if (controller->getStickPosition(StickName::CONTROL_STICK).y <= -0.55)
+		{
+			std::cout << "up b\n";
+			return true;
+		}
+		if (controller->getStickPosition(StickName::CONTROL_STICK).y >= 0.55)
+		{
+			std::cout << "down b\n";
+			return true;
+		}
+	}
+	return false;
+}
+
+bool CrouchState::handleZ(Player& player, Controller* controller)
+{
+	if (controller->buttonPressed(ButtonName::Z))
+	{
+		player.setNextState(new DownTiltState());
+		return true;
+	}
+	return false;
+}
+
+bool CrouchState::handleControlStick(Player& player, Controller* controller)
+{
+	if (controller->getStickPosition(StickName::CONTROL_STICK).y <= -0.66)
+	{
+		if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).y <= 4)
+		{
+			player.setNextState(new JumpSquatState());
+			return true;
+		}
+	}
+	if (controller->getStickPosition(StickName::CONTROL_STICK).y >= 0.70)
+	{
+		return true;
+	}
+	if (controller->getStickPosition(StickName::CONTROL_STICK).x >= 0.80)
+	{
+		if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).x <= 4)
+		{
+			if (player.getDirection() == Player::Direction::Right)
+			{
+				player.setNextState(new DashState());
+				return true;
+			}
+			else
+			{
+				// Smash Turn
+				player.setNextState(new TurnState());
+				return true;
+			}
+		}
+	}
+	if (controller->getStickPosition(StickName::CONTROL_STICK).x <= -0.80)
+	{
+		if (controller->getFramesSinceDirectionChange(StickName::CONTROL_STICK).x <= 4)
+		{
+			if (player.getDirection() == Player::Direction::Left)
+			{
+				player.setNextState(new DashState());
+				return true;
+			}
+			else
+			{
+				// Smash Turn
+				player.setNextState(new TurnState());
+				return true;
+			}
+		}
+	}
+	if (controller->getStickPosition(StickName::CONTROL_STICK).x >= 0.25)
+	{
+		if (player.getDirection() == Player::Direction::Right)
+		{
+			std::cout << "walk.\n";
+			return true;
+		}
+		else
+		{
+			// Smash Turn
+			player.setNextState(new TurnState());
+			return true;
+		}
+	}
+	if (controller->getStickPosition(StickName::CONTROL_STICK).x <= -0.25)
+	{
+		if (player.getDirection() == Player::Direction::Left)
+		{
+			std::cout << "walk.\n";
+			return true;
+		}
+		else
+		{
+			// Smash Turn
+			player.setNextState(new TurnState());
+			return true;
+		}
+	}
+	player.setNextState(new UnsquatState());
+	return true;
 }

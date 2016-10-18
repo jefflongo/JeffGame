@@ -15,17 +15,18 @@ void ForwardSmashState::init(Player& player)
 
 void ForwardSmashState::handleInput(Player& player, Controller* controller)
 {
-	if (controller == nullptr)
-	{
-		return;
-	}
+	if (controller == nullptr) return;
 }
 
 void ForwardSmashState::update(Player& player, Controller* controller)
 {
 	player.decelOnGround();
 	// test
-	if (animFrame_ >= 9 && animFrame_ <= 34)
+	if (animFrame_ >= 39)
+	{
+		player.setNextState(new IdleState());
+	}
+	else if (animFrame_ >= 9 && animFrame_ <= 34)
 	{
 		if (player.getDirection() == Player::Direction::Right)
 		{
@@ -35,10 +36,6 @@ void ForwardSmashState::update(Player& player, Controller* controller)
 		{
 			player.setPos(player.getPos().x - 3, player.getPos().y);
 		}
-	}
-	else if (animFrame_ >= 39)
-	{
-		player.setNextState(new IdleState());
 	}
 }
 

@@ -15,15 +15,16 @@ void ForwardSpecialState::init(Player& player)
 
 void ForwardSpecialState::handleInput(Player& player, Controller* controller)
 {
-	if (controller == nullptr)
-	{
-		return;
-	}
+	if (controller == nullptr) return;
 }
 
 void ForwardSpecialState::update(Player& player, Controller* controller)
 {
-	if (animFrame_ >= 13 && animFrame_ <= 28)
+	if (animFrame_ >= 63)
+	{
+		player.setNextState(new IdleState());
+	}
+	else if (animFrame_ >= 13 && animFrame_ <= 28)
 	{
 		if (player.getDirection() == Player::Direction::Right)
 		{
@@ -37,10 +38,6 @@ void ForwardSpecialState::update(Player& player, Controller* controller)
 	else
 	{
 		player.decelOnGround();
-	}
-	if (animFrame_ >= 63)
-	{
-		player.setNextState(new IdleState());
 	}
 }
 

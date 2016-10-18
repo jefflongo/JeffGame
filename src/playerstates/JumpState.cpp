@@ -15,10 +15,7 @@ void JumpState::init(Player& player)
 
 void JumpState::handleInput(Player& player, Controller* controller)
 {
-	if (controller == nullptr)
-	{
-		return;
-	}
+	if (controller == nullptr) return;
 }
 
 void JumpState::update(Player& player, Controller* controller)

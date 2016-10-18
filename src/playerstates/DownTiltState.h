@@ -15,6 +15,7 @@ public:
 	void animate(Player& player);
 	void destroy(Player& player);
 private:
+	bool handleControlStick(Player& player, Controller* controller);
 };
 
 #endif // DOWN_TILT_STATE_H_

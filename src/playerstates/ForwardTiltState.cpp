@@ -15,10 +15,7 @@ void ForwardTiltState::init(Player& player)
 
 void ForwardTiltState::handleInput(Player& player, Controller* controller)
 {
-	if (controller == nullptr)
-	{
-		return;
-	}
+	if (controller == nullptr) return;
 }
 
 void ForwardTiltState::update(Player& player, Controller* controller)

@@ -45,13 +45,11 @@ void Game::update()
 		if (updates++ < MAX_UPDATES)
 		{
 			state_->update(*this);
+			if (debugMode_)
+			{
+				calculateFramerate();
+			}
 		}
-		/*
-		if (debugMode_)
-		{
-		calculateFramerate();
-		}
-		*/
 	}
 }
 
@@ -115,7 +113,7 @@ void Game::render()
 	window_.display();
 }
 
-bool Game::getDebugMode() const
+bool Game::getDebugState() const
 {
 	return debugMode_;
 }
@@ -135,15 +133,6 @@ void Game::setFramerate(unsigned int value)
 	targetFps_ = value;
 	frametime_ = 1000000.f / targetFps_;
 }
-
-/*
-void Game::calculateFramerate()
-{
-	// Add 0.5 to round to the nearest integer with truncation
-	std::string onScreenFps = Globals::intToStr(static_cast<unsigned int>(1000000. / (frametime_)+0.5));
-	fpsText_.setString(onScreenFps);
-}
-*/
 
 void Game::lowerFramerate()
 {
@@ -170,10 +159,6 @@ void Game::lowerFramerate()
 	else if (targetFps_ == 5)
 	{
 		setFramerate(1);
-	}
-	else if (targetFps_ == 1)
-	{
-
 	}
 	else
 	{
@@ -207,12 +192,23 @@ void Game::increaseFramerate()
 	{
 		setFramerate(240);
 	}
-	else if (targetFps_ == 240)
-	{
-
-	}
 	else
 	{
 		setFramerate(60);
+	}
+}
+
+void Game::calculateFramerate()
+{
+	static sf::Clock elapsed;
+	static int count = 0;
+	if (count++ % 5 == 0)
+	{
+		// Add 0.5 to round to the nearest integer with truncation
+		avgFps_ = static_cast<unsigned int>((5 * 1000000. / elapsed.restart().asMicroseconds()) + 0.5);
+		/*
+		std::string onScreenFps = Globals::intToStr(avgFps_);
+		fpsText_.setString(onScreenFps);
+		*/
 	}
 }

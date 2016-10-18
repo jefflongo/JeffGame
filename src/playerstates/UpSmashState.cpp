@@ -15,10 +15,7 @@ void UpSmashState::init(Player& player)
 
 void UpSmashState::handleInput(Player& player, Controller* controller)
 {
-	if (controller == nullptr)
-	{
-		return;
-	}
+	if (controller == nullptr) return;
 }
 
 void UpSmashState::update(Player& player, Controller* controller)

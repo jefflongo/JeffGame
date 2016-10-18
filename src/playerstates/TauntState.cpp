@@ -15,10 +15,7 @@ void TauntState::init(Player& player)
 
 void TauntState::handleInput(Player& player, Controller* controller)
 {
-	if (controller == nullptr)
-	{
-		return;
-	}
+	if (controller == nullptr) return;
 }
 
 void TauntState::update(Player& player, Controller* controller)

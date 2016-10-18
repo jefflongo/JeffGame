@@ -1,6 +1,7 @@
 #ifndef SPLASH_SCREEN_H_
 #define SPLASH_SCREEN_H_
 
+#include <vector>
 #include "SFML/Graphics.hpp"
 #include "SFML/Audio.hpp"
 #include "../GameState.h"
@@ -16,12 +17,11 @@ public:
 	void render(sf::RenderWindow& window);
 	void destroy();
 private:
-	unsigned int getConnectedDevices();
+	std::vector<unsigned int> getConnectedDevices();
 	void moveText();
 	void pollForStart(Game& game);
 
-	unsigned int connectedDevices_ = 0;
-
+	std::vector<unsigned int> connectedDevices_;
 	sf::Font font_;
 	sf::Text pressStartText_;
 	sf::Music theme_; // YouTube: Rebaz - Super Smash Bros. Melee Theme (Remix) - SUPER FOX BROS.

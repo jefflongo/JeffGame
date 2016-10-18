@@ -27,10 +27,10 @@ public:
 	void setAnimation(std::string animID, int widthOffset = 0, int heightOffset = 0, float angle = 0);
 	void setOnScreenState(std::string text);
 
-	sf::Vector2f getPos() const { return pos_; }
-	sf::Vector2f getVelo() const { return velo_; }
-	Direction getDirection() const { return direction_; }
-	bool isOnGround() const { return onGround_; }
+	sf::Vector2f getPos() const;
+	sf::Vector2f getVelo() const;
+	Direction getDirection() const;
+	bool isOnGround() const;
 
 	void changeDirection();
 	void jump();
@@ -72,7 +72,9 @@ private:
 	const float TERMINAL_RUN_VELOCITY = 18.0f;
 	const float TERMINAL_JUMP_VELOCITY = 19.0f;
 	const float TERMINAL_FALL_VELOCITY = 20.0f;
+	const float AIR_ACCEL = 5.0f; // air mobility/drift
 	const float AIR_FRICTION = 0.2f;
+	const float TERMINAL_AIR_VELOCITY = 15.0f;
 };
 
 #endif // PLAYER_H_
